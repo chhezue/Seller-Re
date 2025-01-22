@@ -1,0 +1,19 @@
+{
+  "name": "seller-re-market",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chhezue/Seller-Re-Market.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chhezue/Seller-Re-Market/issues"
+  },
+  "homepage": "https://github.com/chhezue/Seller-Re-Market#readme"
+}
