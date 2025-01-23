@@ -1,5 +1,6 @@
 // const connectDB = require('./utils/mongoose');
 const {MakeDummy} = require('./utils/makeDummy');
+const {app, PORT} = require('./app');
 
 class SellerRe{
     constructor(data) {
@@ -14,6 +15,10 @@ class SellerRe{
             const makeDummy = new MakeDummy();
             makeDummy.makeUser();
         }
+
+        app.listen(PORT, () => {
+            console.log(`${PORT}번 포트에서 대기 중`);
+        });
     }
 }
 
