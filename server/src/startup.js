@@ -1,6 +1,7 @@
 // const connectDB = require('./utils/mongoose');
-const {MakeDummy} = require('./utils/makeDummy');
-const {app, PORT} = require('./app');
+const { MakeDummy } = require('./utils/makeDummy');
+const { app, PORT } = require('./app');
+require('dotenv').config();
 
 class SellerRe{
     constructor(data) {
