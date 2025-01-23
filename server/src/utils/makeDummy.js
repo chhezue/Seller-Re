@@ -25,7 +25,7 @@ class MakeDummy {
                         region: '67910ebae891c83d42444809', // Region. 서울특별시 강남구
                     });
                 }
-                console.log(users);
+                // console.log(users);
                 return users;
             }
 
@@ -35,7 +35,16 @@ class MakeDummy {
                 console.log(`${result.length} dummy user 생성 성공`);
             }
 
-            await insertDummyUser();
+            await User.countDocuments()
+                .then(async count => {
+                    if (count < 30)
+                        await insertDummyUser();
+                    else
+                        console.log(`count > 30. count : ${count}`);
+                })
+                .catch(err => {
+                    console.error(err);
+                });
         } catch (e) {
             console.error(`dummyuser 생성중 에러. ${e}`);
         } finally {

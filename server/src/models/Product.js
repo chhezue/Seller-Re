@@ -5,7 +5,7 @@ const ProductSchema = new mongoose.Schema({
     category: { type: String, required: true },
     transactionType: { type: String, required: true },
     description: String,
-    createdAt: { type: Date, default: Date.now },
+    createdAt: { type: Date, default: () => Date.now() + (9 * 60 * 60 * 1000) },
     updatedAt: Date,
     deletedAt: Date,
     seller: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },

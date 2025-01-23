@@ -4,7 +4,7 @@ const { app, PORT } = require('./app');
 require('dotenv').config();
 
 class SellerRe{
-    constructor(data) {
+    constructor() {
         // connectDB();
         this.startSellerRe();
     }
@@ -17,9 +17,15 @@ class SellerRe{
             makeDummy.makeUser();
         }
 
-        app.listen(PORT, () => {
-            console.log(`${PORT}번 포트에서 대기 중`);
-        });
+        try {
+            app.listen(PORT, () => {
+                console.log(`${PORT}번 포트에서 대기 중`);
+            });
+        }catch (err){
+            console.error(err);
+            console.error(`${PORT} already in use`);
+            process.exit(1);
+        }
     }
 }
 

@@ -5,7 +5,7 @@ const UserSchema = new mongoose.Schema({
     username: {type: String, required: true},
     password: {type: String, required: true},
     role: {type: String, default: 'user'},
-    createdAt: {type: Date, default: Date.now},
+    createdAt: {type: Date, default: () => Date.now() + (9 * 60 * 60 * 1000)},
     profileImage: String,
     region: {type: mongoose.Schema.Types.ObjectId, ref: 'Region'},
 });
