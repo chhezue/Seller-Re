@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
-const connectDB = require('../utils/mongoose');
-const User = require('../models/User');
+// const mongoose = require('mongoose');
+// const connectDB = require('../config/mongoose');
+const User = require('../app/models/user');
 
 class MakeDummy {
     constructor() {
@@ -10,7 +10,7 @@ class MakeDummy {
     async makeUser() {
         console.log('start MakeUserDummy')
         try {
-            connectDB();
+            // connectDB();
 
             const generateDummyUser = (count) => {
                 const users = [];
@@ -48,7 +48,7 @@ class MakeDummy {
         } catch (e) {
             console.error(`dummyuser 생성중 에러. ${e}`);
         } finally {
-            mongoose.connection.close();
+            // mongoose.connection.close(); // 굳이 닫을 필요가 없음
         }
     }
 }

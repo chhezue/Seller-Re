@@ -6,4 +6,5 @@ const ProductFileSchema = new mongoose.Schema({
     product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
 });
 
-module.exports = mongoose.model('ProductFile', ProductFileSchema, 'ProductFile');
+const ProductFile = mongoose.models.ProductFile || mongoose.model('ProductFile', ProductFileSchema, 'ProductFile'); 
+module.exports = ProductFile;

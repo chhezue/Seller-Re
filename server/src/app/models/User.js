@@ -10,4 +10,6 @@ const UserSchema = new mongoose.Schema({
     region: {type: mongoose.Schema.Types.ObjectId, ref: 'Region'},
 });
 
-module.exports = mongoose.model('User', UserSchema, 'User');
+// mongoose.models를 사용하여 중복 정의 방지
+const User = mongoose.models.User || mongoose.model('User', UserSchema, 'User');
+module.exports = User;

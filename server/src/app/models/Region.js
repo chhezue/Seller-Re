@@ -5,4 +5,5 @@ const RegionSchema = new mongoose.Schema({
     level2: { type: String, required: true },
 });
 
-module.exports = mongoose.model('Region', RegionSchema, 'Region');
+const Region = mongoose.models.Region || mongoose.model('Region', RegionSchema, 'Region');
+module.exports = Region;

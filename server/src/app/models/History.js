@@ -12,4 +12,5 @@ const HistorySchema = new mongoose.Schema({
     rating: { type: Number, min: 1, max: 5 },
 });
 
-module.exports = mongoose.model('History', HistorySchema, 'History');
+const History = mongoose.models.History || mongoose.model('History', HistorySchema, 'History'); 
+module.exports = History;

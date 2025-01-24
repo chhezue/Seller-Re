@@ -1,11 +1,14 @@
-// const connectDB = require('./utils/mongoose');
+const connectDB = require('./config/mongoose');
 const { MakeDummy } = require('./utils/makeDummy');
-const { app, PORT } = require('./app');
-require('dotenv').config();
+const {DotenvConfig} = require('./config/dotenv.config');
+const {App} = require('./app/app');
 
 class SellerRe{
     constructor() {
-        // connectDB();
+        DotenvConfig.load(); // 환경 변수 로드
+        connectDB();
+        
+        this.app = new App();
         this.startSellerRe();
     }
 
@@ -18,13 +21,17 @@ class SellerRe{
         }
 
         try {
-            app.listen(PORT, () => {
-                console.log(`${PORT}번 포트에서 대기 중`);
+            this.app.listen(process.env.PORT, () => {
+                console.log(`${process.env.PORT}번 포트에서 서버가 실행 중입니다.`);
             });
-        }catch (err){
-            console.error(err);
-            console.error(`${PORT} already in use`);
-            process.exit(1);
+        } catch (err) {
+            if (err.code === 'EADDRINUSE') {
+                console.error(`${process.env.PORT}번 포트가 이미 사용 중입니다.`);
+                process.exit(1); // 오류 발생 시 프로세스 종료
+            } else {
+                console.error('서버 실행 중 오류 발생:', err);
+                process.exit(1);
+            }
         }
     }
 }

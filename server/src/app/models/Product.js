@@ -14,4 +14,5 @@ const ProductSchema = new mongoose.Schema({
     region: { type: mongoose.Schema.Types.ObjectId, ref: 'Region' },
 });
 
-module.exports = mongoose.model('Product', ProductSchema, 'Product');
+const Product = mongoose.models.Product || mongoose.model('Product', ProductSchema, 'Product'); 
+module.exports = Product;

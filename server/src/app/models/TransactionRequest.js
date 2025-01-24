@@ -6,4 +6,5 @@ const TransactionRequestSchema = new mongoose.Schema({
     createdAt: { type: Date, default: () => Date.now() + (9 * 60 * 60 * 1000) },
 });
 
-module.exports = mongoose.model('TransactionRequest', TransactionRequestSchema, 'TransactionRequest');
+const TransactionRequest = mongoose.models.TransactionRequest || mongoose.model('TransactionRequest', TransactionRequestSchema, 'TransactionRequest');
+module.exports = TransactionRequest;
