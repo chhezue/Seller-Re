@@ -5,9 +5,11 @@ const UserSchema = new mongoose.Schema({
     username: {type: String, required: true},
     password: {type: String, required: true},
     role: {type: String, default: 'user'},
-    createdAt: {type: Date, default: Date.now},
+    createdAt: {type: Date, default: () => Date.now() + (9 * 60 * 60 * 1000)},
     profileImage: String,
     region: {type: mongoose.Schema.Types.ObjectId, ref: 'Region'},
 });
 
-module.exports = mongoose.model('User', UserSchema, 'User');
+// mongoose.models를 사용하여 중복 정의 방지
+const User = mongoose.models.User || mongoose.model('User', UserSchema, 'User');
+module.exports = User;

@@ -6,6 +6,7 @@ const path = require("path");
 const startupFile = path.join(__dirname, "startup.js");
 
 function forkService() {
+    
     const child = fork(startupFile, process.argv, {silent: true});
     child.stdout.on('data', (data) => {
         console.log(data.toString());
@@ -23,6 +24,12 @@ function forkService() {
             console.log('RESTART');
             forkService();
         }, 1000)
+    });
+
+    process.on('SIGINT', () => {
+        console.log('Parent process terminated. Killing child process...');
+        child.kill(); // 자식 프로세스 종료
+        process.exit(0);
     });
 }
 

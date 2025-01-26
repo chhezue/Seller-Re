@@ -6,4 +6,5 @@ const FavoriteSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model('Favorite', FavoriteSchema, 'Favorite');
+const Favorite = mongoose.models.Favorite || mongoose.model('Favorite', FavoriteSchema, 'Favorite');  
+module.exports = Favorite;
