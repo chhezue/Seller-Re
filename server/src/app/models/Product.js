@@ -12,6 +12,8 @@ const ProductSchema = new mongoose.Schema({
     status: { type: String, required: true },
     writeStatus: { type: String, required: true },
     region: { type: mongoose.Schema.Types.ObjectId, ref: 'Region' },
+},{
+    versionKey : false, // __v 필드 비활성화
 });
 
 const Product = mongoose.models.Product || mongoose.model('Product', ProductSchema, 'Product'); 

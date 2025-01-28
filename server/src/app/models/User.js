@@ -8,6 +8,8 @@ const UserSchema = new mongoose.Schema({
     createdAt: {type: Date, default: () => Date.now() + (9 * 60 * 60 * 1000)},
     profileImage: String,
     region: {type: mongoose.Schema.Types.ObjectId, ref: 'Region'},
+},{
+    versionKey : false, // __v 필드 비활성화
 });
 
 // mongoose.models를 사용하여 중복 정의 방지
