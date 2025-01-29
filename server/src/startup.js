@@ -19,6 +19,7 @@ class SellerRe{
             const makeDummy = new MakeDummy();
             makeDummy.makeUser();
             makeDummy.makeRegion();
+            makeDummy.makeProduct();
         }
 
         try {

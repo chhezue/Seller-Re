@@ -2,6 +2,8 @@
 // const connectDB = require('../config/mongoose');
 const User = require('../app/models/user');
 const Region = require('../app/models/region');
+const Product = require('../app/models/product');
+const Category = require('../app/models/category');
 
 class MakeDummy {
     constructor() {
@@ -148,6 +150,65 @@ class MakeDummy {
             console.error(`region 생성중 에러. ${err}`);
         }
     }
+
+    async makeProduct() {
+        try {
+            // connectDB();
+
+            // User, Category, Region은 배열이 아니므로 따로 객체를 가져와서 사용해야 함.
+            const fetchData = async () => {
+                const users = await User.find();
+                const categories = await Category.find();
+                const regions = await Region.find();
+                return { users, categories, regions }; // 두 데이터를 함께 반환
+            };
+
+            const { users, categories, regions } = await fetchData();
+
+            const generateDummyProduct = (count) => {
+                const products = [];
+
+                for (let i = 0; i < count; i++) {
+                    products.push({
+                        name: `product${i + 1}`,
+                        category: categories[Math.floor(Math.random() * categories.length)]._id,
+                        transactionType: Math.random() < 0.5 ? '판매' : '나눔',
+                        description: `abc`,
+                        createdAt: Date.now(),
+                        updatedAt: null,
+                        deletedAt: null,
+                        seller: users[Math.floor(Math.random() * users.length)]._id,
+                        status: Math.random() < 0.5 ? '판매중' : '판매완료',
+                        writeStatus: Math.random() < 0.5 ? '임시저장' : '등록',
+                        region: regions[Math.floor(Math.random() * regions.length)]._id
+                    });
+                }
+                // console.log(products);
+                return products;
+            }
+
+            const insertDummyProduct = async () => {
+                const dummyProducts = generateDummyProduct(50);
+                const result = await Product.insertMany(dummyProducts);
+                console.log(`${result.length} dummy Product 생성 성공`);
+            }
+
+            await Product.countDocuments()
+                .then(async count => {
+                    if (count < 30)
+                        await insertDummyProduct();
+                    else
+                        console.log(`count > 30. count : ${count}`);
+                })
+                .catch(err => {
+                    console.error(err);
+                });
+        } catch (err) {
+            console.error(`dummy Product 생성중 에러. ${err}`);
+        } finally {
+            // mongoose.connection.close();
+        }
+    }
 }
 
-module.exports = {MakeDummy};
+module.exports = { MakeDummy };
