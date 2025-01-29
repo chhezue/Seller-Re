@@ -4,7 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "concurrently \"npm run server-dev\" \"npm run client-dev\"",
+    "client-dev": "cd client && npm start",
+    "server-dev": "cd server && npm run dev",
+    "start" : "concurrently \"npm run server\" \"npm run client\"",
+    "client": "cd client && npm start",
+    "server": "cd server && npm start"
   },
   "repository": {
     "type": "git",
@@ -15,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/chhezue/Seller-Re-Market/issues"
   },
-  "homepage": "https://github.com/chhezue/Seller-Re-Market#readme"
+  "homepage": "https://github.com/chhezue/Seller-Re-Market#readme",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
 }
