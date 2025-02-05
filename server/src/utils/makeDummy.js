@@ -14,6 +14,12 @@ class MakeDummy {
         console.log('start MakeUserDummy')
         try {
             // connectDB();
+            const regionsData = await Region.find().lean();
+
+            function getRandomRegionId(regions) {
+                const randomIndex = Math.floor(Math.random() * regions.length);
+                return regions[randomIndex]._id;
+            }
 
             const generateDummyUser = (count) => {
                 const users = [];
@@ -25,7 +31,8 @@ class MakeDummy {
                         password: `1234`,
                         role: 'customer',
                         profileImage: ``,
-                        region: '6794d5502182ffe7b3b86afe', // Region. 서울특별시 강남구
+                        // region: '6794d5502182ffe7b3b86afe', // Region. 서울특별시 강남구
+                        region: getRandomRegionId(regionsData),
                     });
                 }
                 // console.log(users);
@@ -123,7 +130,7 @@ class MakeDummy {
             const regions = [];
             for (const [level1, level2List] of Object.entries(korean_regions)) {
                 level2List.forEach(level2 => {
-                    regions.push({ level1, level2 });
+                    regions.push({level1, level2});
                 });
             }
             // 데이터 삽입 함수
@@ -136,7 +143,7 @@ class MakeDummy {
             await Region.countDocuments()
                 .then(async (count) => {
                     await insertDummyRegions();
-                    
+
                     // if (count === 170) {
                     //     await insertDummyRegions();
                     // } else {

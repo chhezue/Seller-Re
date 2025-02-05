@@ -24,6 +24,8 @@ const ProductSchema = new mongoose.Schema({
         enum: ['임시저장', '등록']
     },
     region: { type: mongoose.Schema.Types.ObjectId, ref: 'Region' },
+},{
+    versionKey : false, // __v 필드 비활성화
 });
 
 const Product = mongoose.models.Product || mongoose.model('Product', ProductSchema, 'Product');

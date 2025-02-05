@@ -10,6 +10,8 @@ const HistorySchema = new mongoose.Schema({
     region: { type: mongoose.Schema.Types.ObjectId, ref: 'Region' },
     feedback: String,
     rating: { type: Number, min: 1, max: 5 },
+},{
+    versionKey : false, // __v 필드 비활성화
 });
 
 const History = mongoose.models.History || mongoose.model('History', HistorySchema, 'History'); 
