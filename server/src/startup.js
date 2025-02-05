@@ -18,7 +18,8 @@ class SellerRe{
             // throw new Error('error!');
             const makeDummy = new MakeDummy();
             makeDummy.makeUser();
-            // makeDummy.makeRegion();
+            makeDummy.makeRegion();
+            makeDummy.makeProduct();
         }
 
         try {
