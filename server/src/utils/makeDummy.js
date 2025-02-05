@@ -153,37 +153,43 @@ class MakeDummy {
 
     async makeProduct() {
         try {
-            // connectDB();
+            // await connectDB();
 
-            // User, Category, Region은 배열이 아니므로 따로 객체를 가져와서 사용해야 함.
             const fetchData = async () => {
                 const users = await User.find();
                 const categories = await Category.find();
-                const regions = await Region.find();
-                return { users, categories, regions }; // 두 데이터를 함께 반환
+                return { users, categories }; // 두 데이터를 함께 반환
             };
 
-            const { users, categories, regions } = await fetchData();
+            const { users, categories } = await fetchData(); // fetchData 호출
 
             const generateDummyProduct = (count) => {
                 const products = [];
 
                 for (let i = 0; i < count; i++) {
+                    const user = users[Math.floor(Math.random() * users.length)];
+                    const category = categories[Math.floor(Math.random() * categories.length)];
+
+                    const updatedAt = createdAt; // 초기에는 등록일 == 수정일로 설정
+                    const deletedAt = null;
+
+                    if (updatedAt < createdAt) {
+                        throw new Error('수정일은 등록일보다 이전일 수 없습니다.');
+                    }
+
                     products.push({
                         name: `product${i + 1}`,
-                        category: categories[Math.floor(Math.random() * categories.length)]._id,
+                        category: category._id,
                         transactionType: Math.random() < 0.5 ? '판매' : '나눔',
                         description: `abc`,
-                        createdAt: Date.now(),
                         updatedAt: null,
                         deletedAt: null,
-                        seller: users[Math.floor(Math.random() * users.length)]._id,
+                        seller: user._id,
                         status: Math.random() < 0.5 ? '판매중' : '판매완료',
                         writeStatus: Math.random() < 0.5 ? '임시저장' : '등록',
-                        region: regions[Math.floor(Math.random() * regions.length)]._id
+                        region: user.region
                     });
                 }
-                // console.log(products);
                 return products;
             }
 
@@ -193,22 +199,60 @@ class MakeDummy {
                 console.log(`${result.length} dummy Product 생성 성공`);
             }
 
-            await Product.countDocuments()
-                .then(async count => {
-                    if (count < 30)
-                        await insertDummyProduct();
-                    else
-                        console.log(`count > 30. count : ${count}`);
-                })
-                .catch(err => {
-                    console.error(err);
-                });
+            const count = await Product.countDocuments(); // 제품 개수 확인
+            if (count < 30) {
+                await insertDummyProduct();
+            } else {
+                console.log(`count > 30. count : ${count}`);
+            }
         } catch (err) {
             console.error(`dummy Product 생성중 에러. ${err}`);
         } finally {
-            // mongoose.connection.close();
+
         }
     }
+
+    async makeProductFile() {
+        try {
+            // await connectDB();
+
+            const fetchProducts = async () => {
+                return await Product.find(); // 모든 제품 조회
+            };
+
+            const products = await fetchProducts(); // 제품 목록 가져오기
+
+            const generateDummyProductFile = (count) => {
+                const productFiles = [];
+
+                for (let i = 0; i < count; i++) {
+                    const product = products[Math.floor(Math.random() * products.length)];
+                    productFiles.push({
+                        fileName: `file${i + 1}.jpg`, // 파일 이름
+                        fileUrl: `server/src/app/public/images/dummyCat.jpg`, // 파일 url
+                        product: product._id
+                    });
+                }
+                return productFiles;
+            };
+
+            const insertDummyProductFile = async () => {
+                const dummyProductFiles = generateDummyProductFile(50);
+                const result = await ProductFile.insertMany(dummyProductFiles);
+                console.log(`${result.length} dummy ProductFile 생성 성공`);
+            };
+
+            const count = await ProductFile.countDocuments(); // ProductFile 개수 확인
+            if (count < 30) {
+                await insertDummyProductFile();
+            } else {
+                console.log(`count > 30. count : ${count}`);
+            }
+        } catch (err) {
+            console.error(`dummy ProductFile 생성중 에러. ${err}`);
+        } finally { }
+    }
+
 }
 
 module.exports = { MakeDummy };
