@@ -165,10 +165,12 @@ class MakeDummy {
             const fetchData = async () => {
                 const users = await User.find();
                 const categories = await Category.find();
+                console.log('categories11', categories);
                 return { users, categories }; // 두 데이터를 함께 반환
             };
 
             const { users, categories } = await fetchData(); // fetchData 호출
+            // const { users, categories } =  fetchData(); // fetchData 호출
 
             const generateDummyProduct = (count) => {
                 const products = [];
@@ -176,7 +178,9 @@ class MakeDummy {
                 for (let i = 0; i < count; i++) {
                     const user = users[Math.floor(Math.random() * users.length)];
                     const category = categories[Math.floor(Math.random() * categories.length)];
+                    console.log('category', category);
 
+                    const createdAt = Date.now() + (9 * 60 * 60 * 1000);
                     const updatedAt = createdAt; // 초기에는 등록일 == 수정일로 설정
                     const deletedAt = null;
 
