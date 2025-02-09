@@ -1,6 +1,11 @@
 const User = require('../models/User');
+const {JwtUtils} = require('../../utils/jwtUtils');
 
 class UserService {
+    constructor() {
+        this.jwtUtils = new JwtUtils();
+    }
+    
     async fetchAllUsers() {
         return await User.find();
     }
@@ -22,6 +27,13 @@ class UserService {
             return null;
         }
         return user;   
+    }
+
+    async generateTokens(user) {
+        const accessToken = this.jwtUtils.generateAccessToken(user);
+        const refreshToken = this.jwtUtils.generateRefreshToken(user);
+        
+        return {accessToken, refreshToken};
     }
 }
 

@@ -18,7 +18,8 @@ class UserRoutes {
         this.router.post("/login", this.userController.loginUser.bind(this.userController));
 
         // 토큰 검증 API (자동 로그인)
-        this.router.get("/auth", this.authMiddleware.authenticate.bind(this.authMiddleware), this.userController.verifyToken.bind(this.userController));
+        // this.router.get("/auth", this.authMiddleware.authenticate.bind(this.authMiddleware), this.userController.verifyToken.bind(this.userController));
+        this.router.get("/auth", this.authMiddleware.authenticateToken().bind(this.authMiddleware), this.userController.verifyToken.bind(this.userController));
     }
 }
 
