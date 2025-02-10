@@ -5,23 +5,56 @@ export default function Header() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const navigate = useNavigate();
 
-    // 페이지가 로드될 때 localStorage에서 accessToken을 확인
     useEffect(() => {
-        const accessToken = localStorage.getItem("accessToken");
-        if (accessToken) {
-            setIsLoggedIn(true);  // accessToken이 있으면 로그인 상태
-        }
+        checkLoginStatus();
+        const interval = setInterval(refreshAccessToken, 55 * 1000); // 55초마다 토큰 갱신
+        return () => clearInterval(interval);
     }, []);
 
+    const checkLoginStatus = () => {
+        const accessToken = localStorage.getItem("accessToken");
+        if (accessToken) {
+            setIsLoggedIn(true);
+        } else {
+            refreshAccessToken();
+        }
+    };
+
+    const refreshAccessToken = async () => {
+        try {
+            const response = await fetch('http://localhost:9000/api/users/refresh', {
+                method: 'POST',
+                credentials: 'include', // ✅ 쿠키에 저장된 Refresh Token 포함
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to refresh access token");
+            }
+
+            const data = await response.json();
+            if (data.accessToken) {
+                localStorage.setItem('accessToken', data.accessToken);
+                setIsLoggedIn(true);
+            } else {
+                handleLogout();
+            }
+        } catch (err) {
+            console.error("토큰 갱신 실패", err);
+            handleLogout();
+        }
+    };
+
+
+
     const handleLogout = () => {
-        localStorage.removeItem("accessToken");  // accessToken 삭제
-        document.cookie = "refreshToken=; max-age=0"; // refreshToken 쿠키 삭제
-        setIsLoggedIn(false);  // 로그아웃 상태로 변경
-        navigate("/login");  // 로그인 페이지로 리디렉션
+        localStorage.removeItem("accessToken");
+        document.cookie = "refreshToken=; max-age=0"; // Refresh Token 삭제
+        setIsLoggedIn(false);
+        navigate("/login");
     };
 
     const handleMyPage = () => {
-        navigate("/my-page");  // 마이 페이지로 이동
+        navigate("/my-page");
     };
 
     return (

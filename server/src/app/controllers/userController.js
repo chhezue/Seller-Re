@@ -57,17 +57,21 @@ class UserController {
 
     async refresh(req, res) {
         try {
-            const {refreshToken} = req.cookies;
+            console.log("쿠키 확인:", req.cookies); 
+
+            const { refreshToken } = req.cookies;
             if (!refreshToken) {
-                return res.status(401).json({message: 'No refresh token provided'});
+                return res.status(401).json({ message: "No refresh token provided" });
             }
 
             const newAccessToken = await this.userService.verifyAndRefreshToken(refreshToken);
-            res.json({accessToken: refreshToken});
+            res.json({ accessToken: newAccessToken }); 
         } catch (err) {
-            res.status(403).json({message : 'Invalid refresh token'});
+            console.log("Refresh token error:", err);
+            res.status(403).json({ message: "Invalid refresh token" });
         }
     }
+
     
     async logout(req, res) {
         res.clearCookie('refreshToken');
