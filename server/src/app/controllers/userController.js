@@ -74,8 +74,22 @@ class UserController {
 
     
     async logout(req, res) {
-        res.clearCookie('refreshToken');
-        res.json({message: 'Logged out'});
+        //로그아웃 상황
+        //1. accessToken 유효. 로그아웃 성공
+        //2. accessToken 만료, refreshToken 있음. 로그아웃 성공.
+        //3. accessToken 만료, refreshToken 없음. 로그아웃 실패 401 에러.
+        
+        try{
+            const {refreshToken} = req.cookies;
+            // user 정보와 refreshToken 이 있어야 함
+            if (!req.user && !refreshToken) {
+                return res.status(401).json({message : 'No valid session'});
+            }
+            res.clearCookie('refreshToken');
+            return res.status(200).json({message:'logout'});
+        }catch (err){
+            res.status(400).json({message : 'Logout failed'});
+        }
     }
 
 }

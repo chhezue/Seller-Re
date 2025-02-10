@@ -1,33 +1,37 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 
 function LoginPage() {
     const [userId, setUserId] = useState('');
     const [userPassword, setUserPassword] = useState('');
 
     const handleLogin = async () => {
+        console.log("로그인 버튼 클릭됨!"); // ✅ 실행 여부 확인
+
         try {
             const response = await fetch('http://localhost:9000/api/users/login', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, userPassword }),
-                credentials: 'include', // 쿠키를 포함시켜서 서버로 전송
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({userId, userPassword}),
+                credentials: 'include',
             });
 
-            const data = await response.json();
-            if (data.accessToken) {
-                // accessToken은 localStorage에 저장
-                localStorage.setItem('accessToken', data.accessToken);
+            console.log("로그인 응답 상태:", response.status); // ✅ 응답 상태 확인
 
-                // 로그인 후 메인 페이지로 리다이렉트
+            const data = await response.json();
+            console.log("로그인 응답 데이터:", data); // ✅ 응답 데이터 확인
+
+            if (data.accessToken) {
+                localStorage.setItem('accessToken', data.accessToken);
                 window.location.href = '/';
             } else {
                 alert('로그인 실패');
             }
         } catch (err) {
-            console.error(err);
+            console.error("로그인 오류:", err);
             alert('로그인 오류');
         }
     };
+
 
     return (
         <div>

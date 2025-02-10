@@ -18,8 +18,12 @@ class AuthMiddleware {
         
         try{
             req.user = this.jwtUtils.verifyAccessToken(token);
-            next();
+            return next();
         }catch (err){
+            if (err.name === 'TokenExpiredError') {
+                // accessToken 은 만료되었지만 refreshToke 확인(userController 에서 확인함)
+                return next();
+            }
             return res.status(403).json({message: 'Invalid or expired token'});
         }
     }
