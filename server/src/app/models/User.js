@@ -8,6 +8,7 @@ const UserSchema = new mongoose.Schema({
     createdAt: {type: Date, default: () => Date.now() + (9 * 60 * 60 * 1000)},
     profileImage: String,
     region: {type: mongoose.Schema.Types.ObjectId, ref: 'Region'},
+    refreshToken: { type: String },  // JWT refreshToken
 },{
     versionKey : false, // __v 필드 비활성화
 });
