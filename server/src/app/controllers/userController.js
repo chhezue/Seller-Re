@@ -78,6 +78,9 @@ class UserController {
         //1. accessToken 유효. 로그아웃 성공
         //2. accessToken 만료, refreshToken 있음. 로그아웃 성공.
         //3. accessToken 만료, refreshToken 없음. 로그아웃 실패 401 에러.
+
+        console.log('logout');
+        console.log(req.cookies);
         
         try{
             const {refreshToken} = req.cookies;

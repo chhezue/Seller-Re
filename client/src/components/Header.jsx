@@ -46,12 +46,33 @@ export default function Header() {
 
 
 
-    const handleLogout = () => {
-        localStorage.removeItem("accessToken");
-        document.cookie = "refreshToken=; max-age=0"; // Refresh Token 삭제
-        setIsLoggedIn(false);
-        navigate("/login");
+    const handleLogout = async () => {
+        const accessToken = localStorage.getItem("accessToken"); // accessToken 가져오기
+
+        try {
+            const response = await fetch('http://localhost:9000/api/users/logout', {
+                method: 'POST',
+                credentials: 'include', // 쿠키 포함 (refreshToken 전송)
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${accessToken}` // accessToken 전송
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to logout");
+            }
+
+            localStorage.removeItem("accessToken"); // localStorage에서 accessToken 삭제
+            document.cookie = "refreshToken=; max-age=0"; // refreshToken 삭제 (클라이언트 측)
+            setIsLoggedIn(false);
+            navigate("/login");
+        } catch (err) {
+            console.error("로그아웃 실패", err);
+        }
     };
+
+
 
     const handleMyPage = () => {
         navigate("/my-page");
