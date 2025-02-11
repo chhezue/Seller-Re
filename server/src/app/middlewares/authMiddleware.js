@@ -1,4 +1,3 @@
-const jwt = require('jsonwebtoken');
 const {EventEmitter} = require('events');
 const {JwtUtils} = require('../../utils/jwtUtils');
 

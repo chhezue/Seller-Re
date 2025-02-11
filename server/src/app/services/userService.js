@@ -1,6 +1,5 @@
 const User = require('../models/User');
 const {JwtUtils} = require('../../utils/jwtUtils');
-const jwt = require("jsonwebtoken");
 
 class UserService {
     constructor() {
