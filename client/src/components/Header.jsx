@@ -81,12 +81,17 @@ export default function Header() {
         navigate("/my-page");
     };
 
+    const handleProductUpload = () => {
+        navigate("/product/upload");
+    };
+
     return (
         <header>
             {isLoggedIn ? (
                 <>
                     <button onClick={handleMyPage}>마이페이지</button>
                     <button onClick={handleLogout}>로그아웃</button>
+                    <button onClick={handleProductUpload}>상품 등록</button>
                 </>
             ) : (
                 <button onClick={() => navigate("/login")}>로그인</button>
