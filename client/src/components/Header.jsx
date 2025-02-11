@@ -7,7 +7,12 @@ export default function Header() {
 
     useEffect(() => {
         checkLoginStatus();
-        const interval = setInterval(refreshAccessToken, 55 * 1000); // 55초마다 토큰 갱신
+        const interval = setInterval(() => {
+            const accessToken = localStorage.getItem("accessToken");
+            if (accessToken) {
+                refreshAccessToken();
+            }
+        }, 55 * 1000); // 55초마다 토큰 갱신
         return () => clearInterval(interval);
     }, []);
 
@@ -15,16 +20,17 @@ export default function Header() {
         const accessToken = localStorage.getItem("accessToken");
         if (accessToken) {
             setIsLoggedIn(true);
-        } else {
-            refreshAccessToken();
         }
     };
 
     const refreshAccessToken = async () => {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) return; // accessToken 없으면 서버 요청 안 함
+
         try {
             const response = await fetch('http://localhost:9000/api/users/refresh', {
                 method: 'POST',
-                credentials: 'include', // ✅ 쿠키에 저장된 Refresh Token 포함
+                credentials: 'include', // 쿠키에 저장된 Refresh Token 포함
             });
 
             if (!response.ok) {
@@ -44,10 +50,9 @@ export default function Header() {
         }
     };
 
-
-
     const handleLogout = async () => {
-        const accessToken = localStorage.getItem("accessToken"); // accessToken 가져오기
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) return; // accessToken 없으면 서버 요청 안 함
 
         try {
             const response = await fetch('http://localhost:9000/api/users/logout', {
@@ -55,7 +60,7 @@ export default function Header() {
                 credentials: 'include', // 쿠키 포함 (refreshToken 전송)
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${accessToken}` // accessToken 전송
+                    "Authorization": `Bearer ${accessToken}`
                 },
             });
 
@@ -63,16 +68,14 @@ export default function Header() {
                 throw new Error("Failed to logout");
             }
 
-            localStorage.removeItem("accessToken"); // localStorage에서 accessToken 삭제
-            document.cookie = "refreshToken=; max-age=0"; // refreshToken 삭제 (클라이언트 측)
+            localStorage.removeItem("accessToken");
+            document.cookie = "refreshToken=; max-age=0"; // refreshToken 삭제
             setIsLoggedIn(false);
             navigate("/login");
         } catch (err) {
             console.error("로그아웃 실패", err);
         }
     };
-
-
 
     const handleMyPage = () => {
         navigate("/my-page");
