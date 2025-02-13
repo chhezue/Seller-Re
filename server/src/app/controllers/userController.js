@@ -1,10 +1,8 @@
 const {UserService} = require('../services/userService');
-const {JwtUtils} = require('../../utils/jwtUtils');
 
 class UserController {
     constructor() {
         this.userService = new UserService();
-        this.jwtUtils = new JwtUtils();
     }
 
     async getUsers(req, res) {
