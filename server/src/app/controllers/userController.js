@@ -57,7 +57,8 @@ class UserController {
 
     async refresh(req, res) {
         try {
-            console.log("쿠키 확인:", req.cookies); 
+            console.log(`${new Date()} 쿠키 확인 : `,req.cookies);
+            // console.log(new Date(), '쿠키 확인 : ', req.cookies);
 
             const { refreshToken } = req.cookies;
             if (!refreshToken) {

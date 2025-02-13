@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require("cookie-parser");
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swaggerConfig')
 
 const {UserRoutes} = require("./routes/userRoutes");
 
@@ -9,6 +11,7 @@ class App {
         this.app = express();
         this.setMiddlewares();
         this.setRoutes();
+        this.setSwagger();
     }
 
     setMiddlewares() {
@@ -29,18 +32,24 @@ class App {
         this.app.get('/api/test', (req, res) => {
             console.log('GET /api/test');
             res.send(JSON.stringify({
-                "test":"OK",
+                "test": "OK",
             }))
-        } );
+        });
         //End test code. react
         this.app.use('/api/users', userRoutes.router);
     }
 
+    setSwagger() {
+        // 주소: localhost:9000/api-docs
+        this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+    }
+    
     listen(port) {
         this.app.listen(port, () => {
             console.log(`Server listening on port ${port}`);
         });
     }
+
 }
 
 module.exports = {App};
