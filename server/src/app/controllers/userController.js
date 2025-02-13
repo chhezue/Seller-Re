@@ -27,7 +27,7 @@ class UserController {
     }
 
     async loginUser(req, res) {
-        console.log('loginUser');   // 여기까진 성공
+        console.log('loginUser : ', req.body);   // 여기까진 성공
         try {
             const {userId, userPassword} = req.body;
             const user = await this.userService.authenticateUser(userId, userPassword);
@@ -47,7 +47,7 @@ class UserController {
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7d
             });
 
-            res.status(200).json({user, accessToken});
+            res.status(200).json({user, accessToken});  //TODO. user 전부 반환이 아니라 userid, username, role, profileImage만 리턴시켜주기
         } catch (err) {
             console.log(err.message);
             console.log(err)

@@ -69,8 +69,8 @@ const userSwagger = {
                         schema: {
                             type: "object",
                             properties: {
-                                username: { type: "string", example: "johndoe" },
-                                password: { type: "string", example: "password123" },
+                                userId: { type: "string", example: "johndoe" },
+                                userPassword: { type: "string", example: "password123" },
                             },
                         },
                     },
