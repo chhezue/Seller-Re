@@ -31,7 +31,7 @@ export default function ProductUploadPage() {
         setImageFiles((prev) => [...prev, ...files]); // 실제 파일 저장
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e, isTemporary = false) => {
         e.preventDefault();
 
         if (!selectedCategory) {
@@ -40,16 +40,16 @@ export default function ProductUploadPage() {
         }
 
         const formData = new FormData();
-        formData.append("productName", productName);  // 상품명 추가
-        formData.append("category", selectedCategory);  // 선택된 카테고리 추가
+        formData.append("productName", productName);
+        formData.append("category", selectedCategory);
         formData.append("tradeType", tradeType);
         formData.append("price", tradeType === "sale" ? price : 0);
         formData.append("description", description);
+        formData.append("isTemporary", isTemporary); // 임시 저장 여부 추가
 
         imageFiles.forEach((file) => formData.append("images", file));
 
-        // JWT 토큰을 로컬 저장소에서 가져옵니다.
-        const token = localStorage.getItem("accessToken"); // 토큰을 로컬 저장소에서 가져옴
+        const token = localStorage.getItem("accessToken");
         if (!token) {
             alert("로그인 토큰이 없습니다.");
             return;
@@ -60,14 +60,14 @@ export default function ProductUploadPage() {
                 method: "POST",
                 body: formData,
                 headers: {
-                    "Authorization": `Bearer ${token}`, // Authorization 헤더에 토큰을 추가
+                    "Authorization": `Bearer ${token}`,
                 }
             });
 
             if (response.ok) {
-                alert("상품이 등록되었습니다!");
+                alert(isTemporary ? "상품이 임시 저장되었습니다!" : "상품이 등록되었습니다!");
             } else {
-                alert("상품 등록 실패");
+                alert("상품 저장 실패");
             }
         } catch (error) {
             console.error("Error uploading product:", error);
@@ -78,38 +78,33 @@ export default function ProductUploadPage() {
         <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-lg">
             <h2 className="text-2xl font-semibold mb-4">상품 등록</h2>
 
-            <form onSubmit={handleSubmit}>
-                {/* 카테고리 선택 */}
+            <form onSubmit={(e) => handleSubmit(e, false)}>
                 <label className="block font-medium mb-2">카테고리 선택</label>
                 <select
                     className="w-full p-2 border rounded mb-4"
                     value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)} // 카테고리 변경
+                    onChange={(e) => setSelectedCategory(e.target.value)}
                 >
                     <option value="" disabled>카테고리를 선택해주세요</option>
                     {categories.length > 0 ? (
                         categories.map((category) => (
-                            <option key={category._id} value={category.name}>{category.name}</option>
+                            <option key={category._id} value={category._id}>{category.name}</option>
                         ))
                     ) : (
                         <option>카테고리를 불러오는 중...</option>
                     )}
                 </select>
 
-                {/* 상품명 입력 */}
                 <label className="block font-medium mb-2">상품명</label>
                 <input
                     type="text"
                     maxLength="40"
                     placeholder="상품명을 입력해주세요"
                     value={productName}
-                    onChange={(e) => {
-                        setProductName(e.target.value);
-                    }}
+                    onChange={(e) => setProductName(e.target.value)}
                     className="w-full p-2 border rounded mb-4"
                 />
 
-                {/* 거래 방식 선택 */}
                 <label className="block font-medium mb-2">거래 방식</label>
                 <div className="flex mb-4">
                     <label className="mr-4">
@@ -130,7 +125,6 @@ export default function ProductUploadPage() {
                     </label>
                 </div>
 
-                {/* 가격 입력 */}
                 {tradeType === "sale" && (
                     <input
                         type="number"
@@ -141,7 +135,6 @@ export default function ProductUploadPage() {
                     />
                 )}
 
-                {/* 상품 설명 */}
                 <label className="block font-medium mb-2">상품 설명</label>
                 <textarea
                     maxLength="500"
@@ -151,7 +144,6 @@ export default function ProductUploadPage() {
                     className="w-full p-2 border rounded mb-4 h-32"
                 ></textarea>
 
-                {/* 상품 이미지 */}
                 <label className="block font-medium mb-2">상품 이미지 (최대 5개)</label>
                 <div className="flex space-x-2 mb-4">
                     {images.map((img, index) => (
@@ -181,9 +173,15 @@ export default function ProductUploadPage() {
                     onChange={handleImageUpload}
                 />
 
-                {/* 등록/취소 버튼 */}
                 <div className="flex justify-between mt-4">
                     <button type="button" className="px-4 py-2 bg-gray-300 rounded">취소</button>
+                    <button
+                        type="button"
+                        onClick={(e) => handleSubmit(e, true)}
+                        className="px-4 py-2 bg-yellow-500 text-white rounded"
+                    >
+                        임시 저장
+                    </button>
                     <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">등록</button>
                 </div>
             </form>
