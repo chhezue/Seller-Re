@@ -6,7 +6,7 @@ class ProductService {
     }
 
     async fetchAllCategories() {
-        console.log(await Category.find());
+        // console.log(await Category.find());
         return await Category.find();
     }
 }

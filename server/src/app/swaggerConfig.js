@@ -1,5 +1,6 @@
 const swaggerJSDoc = require("swagger-jsdoc");
 const userSwagger = require("./swagger/userSwagger");
+const productSwagger = require("./swagger/productSwagger");
 
 const options = {
     definition: {
@@ -29,6 +30,7 @@ const swaggerSpec = swaggerJSDoc(options);
 swaggerSpec.paths = {
     ...swaggerSpec.paths,
     ...userSwagger,
+    ...productSwagger
 };
 
 module.exports = swaggerSpec;
