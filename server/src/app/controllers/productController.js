@@ -20,6 +20,18 @@ class ProductController {
         }
     }
 
+    // 지역 가져오기
+    async getRegions(req, res) {
+        console.log('getRegions');
+        try {
+            const regions = await this.productService.fetchAllRegions();
+            // console.log('region : ', regions);
+            res.status(200).json(regions);
+        } catch (err) {
+            res.status(500).json({error: err.message});
+        }
+    }
+
     async postProduct(req, res, next) {
         console.log('postProduct ');
 
@@ -64,12 +76,30 @@ class ProductController {
                 writeStatus : isTemporary? '등록' : '임시저장',
                 transactionType : (tradeType==='sale'? '판매' : '나눔'),
                 status : '판매중',
-                region : '6794d5502182ffe7b3b86bdc', // 
+                region : '6794d5502182ffe7b3b86bdc', //
                 fileUrls : imageUrls,
             });
 
             return res.status(201).json({ message: '상품 등록 성공', product: newProduct });
 
+        } catch (err) {
+            next(err); // 글로벌 에러 핸들러로 전달
+        }
+    }
+
+    // 상품 가져오기
+    async getProducts(req, res, next) {
+        console.log('getProduct ');
+
+        // 필터 조건: 지역, 카테고리
+        // 유저는 필터 조건을 보내지 않을 수도 있으므로(전체 조회) req.params가 아닌 req.query 사용
+        // 요청 URL: seller_re_backend/posts?level1=경기도&level2=인천&category=도서
+        const { level1, level2, category } = req.query;
+        console.log('level1: ', level1, '\tlevel2: ', level2, '\tcategory: ', category);
+
+        try {
+            const products = await this.productService.getProducts(level1, level2, category);
+            return res.status(201).json({ message: '상품 조회 성공', products: products });
         } catch (err) {
             next(err); // 글로벌 에러 핸들러로 전달
         }

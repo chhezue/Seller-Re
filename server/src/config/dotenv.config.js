@@ -4,7 +4,7 @@ const path = require('path');
 class DotenvConfig {
     static load() {
         // const envPath = path.resolve(process.cwd(), '.env');
-        const envPath = path.resolve(__dirname, '../../.env');
+        const envPath = path.resolve(__dirname, '../../env');
         const result = dotenv.config({ path: envPath });
 
         console.log('dot env path : ', envPath);
