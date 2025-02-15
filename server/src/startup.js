@@ -1,6 +1,6 @@
+const {DotenvConfig} = require('./config/dotenv.config');
 const connectDB = require('./config/mongoose');
 const { MakeDummy } = require('./utils/makeDummy');
-const {DotenvConfig} = require('./config/dotenv.config');
 const {App} = require('./app/app');
 
 class SellerRe{
