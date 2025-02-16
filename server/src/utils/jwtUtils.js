@@ -39,7 +39,7 @@ class JwtUtils {
     verifyAccessToken(token) {
         //jwt access token 검증
         // 클라이언트에서 요청할 때 이 토큰이 유효한지 확인함
-        console.log('verifyAccessToken', token);
+        // console.log('verifyAccessToken', token);
         return this.jwt.verify(token, this.JWT_SECRET);
     }
 

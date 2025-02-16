@@ -10,7 +10,6 @@ class ProductController {
     }
 
     async getCategories(req, res) {
-        console.log('getCategories');
         try {
             const categories = await this.productService.fetchAllCategories();
             // console.log('category : ', categories);
@@ -103,6 +102,23 @@ class ProductController {
         } catch (err) {
             next(err); // 글로벌 에러 핸들러로 전달
         }
+    }
+    
+    async getTempPostProduct(req, res){
+        try{
+            const userId = req.user.id;
+            console.log('getTempPostProduct ');
+            console.log('userId : ', userId);
+            const tempPost = await this.productService.getTempPostProductByUserId(userId);
+            console.log('getTempPost', tempPost);
+            return res.status(200).json(tempPost);
+        }catch(err){
+            
+        }
+    }
+    
+    async deleteTempPostProduct(req, res){
+        
     }
 
 }

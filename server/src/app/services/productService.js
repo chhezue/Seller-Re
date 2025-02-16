@@ -43,7 +43,7 @@ class ProductService {
 
             // 2. category로 category_id 찾기
             if (category) {
-                const categoryData = await Category.findOne({ name: category });
+                const categoryData = await Category.findOne({name: category});
                 if (categoryData) {
                     filter.category = categoryData._id; // 찾은 category_id 추가
                 } else {
@@ -61,6 +61,57 @@ class ProductService {
             console.error("상품 조회 중 오류 발생:", error);
             throw error;
         }
+    }
+
+    // 에러 발생. mongoose.Types.ObjectId(userId) 에서 lock이 걸려버림
+    // async getTempPostProductByUserId(userId) {
+    //     return await Product.findOne({
+    //         seller: mongoose.Types.ObjectId(userId),
+    //         writeStatus: "임시저장",
+    //         // DEL_YN 이 N 이거나, DEL_YN 필드 자체가 존재하지 않는경우 조회
+    //         $or: [{DEL_YN: "N"}, {DEL_YN: {$exists: false}}],
+    //     });
+    // }
+    async getTempPostProductByUserId(userId) {
+        console.log('getTempPostProductByUserId 호출됨, userId:', userId); // 함수 호출 여부 확인
+
+
+        try {
+            const product = await Product.findOne({
+                seller: (userId),
+                writeStatus: "임시저장",
+                $or: [
+                    {DEL_YN: {$exists: false}}, // DEL_YN 필드가 존재하지 않는 경우
+                    {DEL_YN: "N"} // DEL_YN이 "N"인 경우
+                ]
+            }).sort({createdAt: -1});
+            
+            const category = await Category.findById(product.category).exec();
+            const region = await Region.findById(product.region).exec();
+
+            return {
+                _id: product._id,
+                name: product.name,
+                category: category ? category.name : null,  // category.name으로 변환
+                transactionType: product.transactionType,
+                description: product.description,
+                status: product.status,
+                writeStatus: product.writeStatus,
+                region: region ? region.name : null,  // region.name으로 변환
+                price: product.price,
+                fileUrls: product.fileUrls,
+                createdAt: product.createdAt,
+            };
+            
+        } catch (err) {
+            console.error('쿼리 실행 중 오류 발생:', err); // 에러 발생 시 처리
+            throw err; // 에러를 다시 던져서 호출한 곳에서 처리
+        }
+    }
+
+
+    async deleteTempPostProductByUserId(userId) {
+
     }
 }
 
