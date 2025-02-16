@@ -31,6 +31,8 @@ class ProductRoutes {
         // this.router.get('/auth', this.authMiddleware.authenticateToken.bind(this.authMiddleware), (req, res) => {
         //     res.json({ user: req.user });
         // });
+
+        this.router.get('/', this.productController.getProducts.bind(this.productController));
     }
 }
 

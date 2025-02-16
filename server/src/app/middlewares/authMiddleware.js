@@ -5,16 +5,16 @@ class AuthMiddleware {
     constructor() {
         this.jwtUtils = new JwtUtils();
     }
-    
+
     authenticateToken(req, res, next) {
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
-        
+
         if (!token){
             authEventEmitter.emit('tokenError', { message: 'No token provided', ip: req.ip });
             return res.status(401).json({message: 'No token provided'});
         }
-        
+
         try{
             req.user = this.jwtUtils.verifyAccessToken(token);
             return next();

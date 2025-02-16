@@ -188,6 +188,8 @@ class MakeDummy {
                         throw new Error('수정일은 등록일보다 이전일 수 없습니다.');
                     }
 
+                    const writeStatus = Math.random() < 0.5 ? '임시저장' : '등록';
+
                     products.push({
                         name: `product${i + 1}`,
                         category: category._id,
@@ -196,8 +198,8 @@ class MakeDummy {
                         updatedAt: null,
                         deletedAt: null,
                         seller: user._id,
-                        status: Math.random() < 0.5 ? '판매중' : '판매완료',
-                        writeStatus: Math.random() < 0.5 ? '임시저장' : '등록',
+                        status: writeStatus === '임시저장' ? '임시저장' : (Math.random() < 0.5 ? '판매중' : '판매완료'),
+                        writeStatus: writeStatus,
                         region: user.region
                     });
                 }
