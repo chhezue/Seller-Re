@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, {useState, useRef, useEffect} from "react";
 
 export default function ProductUploadPage() {
     const [categories, setCategories] = useState([]);
@@ -12,7 +12,7 @@ export default function ProductUploadPage() {
     const fileInputRef = useRef(null);
 
     useEffect(() => {
-        fetch("http://localhost:9000/api/products/categories", { method: "GET" })
+        fetch("http://localhost:9000/api/products/categories", {method: "GET"})
             .then(response => response.json())
             .then(data => setCategories(Array.isArray(data) ? data : []))
             .catch(error => {
@@ -173,7 +173,7 @@ export default function ProductUploadPage() {
                     onChange={handleImageUpload}
                 />
 
-                <div className="flex justify-between mt-4">
+                <div className="flex justify-end space-x-2 mt-4">
                     <button type="button" className="px-4 py-2 bg-gray-300 rounded">취소</button>
                     <button
                         type="button"
