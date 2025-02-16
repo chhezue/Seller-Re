@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, {useState, useRef, useEffect} from "react";
+import {useNavigate} from "react-router-dom";
 
 export default function ProductUploadPage() {
     const [categories, setCategories] = useState([]); // 카테고리 상태
@@ -11,13 +11,13 @@ export default function ProductUploadPage() {
     const [imagePreviews, setImagePreviews] = useState([]); // 이미지 미리보기
     const [imageFiles, setImageFiles] = useState([]); // 이미지 파일 상태
     const [isDragging, setIsDragging] = useState(false); // 드래그 상태
-    const [hasConfirmedTempProduct, setHasConfirmedTempProduct] = useState(false); // 확인 여부 상태
     const fileInputRef = useRef(null);
     const navigate = useNavigate(); // 뒤로가기 위한 navigate 사용
+    const [hasConfirmedTempProduct, setHasConfirmedTempProduct] = useState(false); // 확인 여부 상태
 
     // 카테고리 데이터를 API에서 불러오는 useEffect
     useEffect(() => {
-        fetch("http://localhost:9000/api/products/categories", { method: "GET" })
+        fetch("http://localhost:9000/api/products/categories", {method: "GET"})
             .then((response) => response.json())
             .then((data) => setCategories(Array.isArray(data) ? data : []))
             .catch((error) => {
@@ -26,12 +26,10 @@ export default function ProductUploadPage() {
             });
     }, []); // 빈 배열을 의존성으로 넣어 한 번만 호출되도록
 
-    // 임시 저장된 글 확인
     useEffect(() => {
         const token = localStorage.getItem("accessToken");
         if (!token || hasConfirmedTempProduct) return; // 이미 확인한 경우 리턴
 
-        // 임시 저장된 글 불러오기
         fetch("http://localhost:9000/api/products/temp", {
             method: "GET",
             headers: {
@@ -40,49 +38,45 @@ export default function ProductUploadPage() {
         })
             .then((response) => response.json())
             .then((data) => {
-                if (data) {
-                    // 팝업이 한번만 뜨도록 확인
-                    if (!hasConfirmedTempProduct) {
-                        console.log(`Alert shown count: 1`); // 한번만 호출되도록 확인
-                        const userConfirmed = window.confirm("임시 저장된 글이 있습니다. 이어서 작성하시겠습니까?");
+                if (data && !hasConfirmedTempProduct) {
+                    // Alert를 한번만 띄우도록
+                    console.log(`Alert shown count: 1`); // alertCount를 없애고, 한번만 호출하도록 설정
+                    const userConfirmed = window.confirm("임시 저장된 글이 있습니다. 이어서 작성하시겠습니까?");
 
-                        if (userConfirmed) {
-                            setProductName(data.name);
-                            setSelectedCategory(data.category);
-                            setTradeType(data.transactionType === "판매" ? "sale" : "free");
-                            setPrice(data.price);
-                            setDescription(data.description);
-                            setImagePreviews(data.images || []);
-                            setImageFiles(data.images || []);
-                            setHasConfirmedTempProduct(true); // 상태 업데이트
-                        } else {
-                            fetch("http://localhost:9000/api/products/temp", {
-                                method: "DELETE",
-                                headers: {
-                                    Authorization: `Bearer ${token}`,
-                                },
+                    if (userConfirmed) {
+                        setProductName(data.name);
+                        setSelectedCategory(data.category);
+                        setTradeType(data.transactionType === "판매" ? "sale" : "free");
+                        setPrice(data.price);
+                        setDescription(data.description);
+                        setImagePreviews(data.images || []);
+                        setImageFiles(data.images || []);
+                    } else {
+                        fetch("http://localhost:9000/api/products/temp", {
+                            method: "DELETE",
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        })
+                            .then((deleteResponse) => {
+                                if (deleteResponse.ok) {
+                                    alert("임시 저장된 글이 삭제되었습니다.");
+                                } else {
+                                    alert("임시 글 삭제 실패");
+                                }
                             })
-                                .then((deleteResponse) => {
-                                    if (deleteResponse.ok) {
-                                        alert("임시 저장된 글이 삭제되었습니다.");
-                                    } else {
-                                        alert("임시 글 삭제 실패");
-                                    }
-                                })
-                                .catch((error) => {
-                                    console.error("임시 글 삭제 오류:", error);
-                                });
-                        }
+                            .catch((error) => {
+                                console.error("임시 글 삭제 오류:", error);
+                            });
                     }
+                    setHasConfirmedTempProduct(true); // 확인 후 상태 변경
                 }
             })
             .catch((error) => {
                 console.error("임시 저장 글 불러오기 오류:", error);
             });
-    }, [hasConfirmedTempProduct]); // 의존성 배열에 hasConfirmedTempProduct만 넣어서 한 번만 실행되도록
+    }, []); // 빈 배열을 의존성으로 넣어 한 번만 호출되도록
 
-    
-    
     const handleImageFiles = (files) => {
         const fileArray = Array.from(files);
         const currentImagesCount = imagePreviews.length;
