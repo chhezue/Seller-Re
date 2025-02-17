@@ -70,7 +70,7 @@ export default function Header() {
                 {/* 로그인 상태에 따른 UI 변경 */}
                 {isLoggedIn ? (
                     <div className="flex items-center space-x-4">
-                        <span className="text-gray-700">{username}</span>
+                        <a href="/my-page"><span className="text-gray-700">{username}</span></a>
                         <button className="px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-600">
                             편집하기
                         </button>

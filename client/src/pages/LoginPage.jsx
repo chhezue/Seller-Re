@@ -31,6 +31,43 @@ export default function LoginPage() {
         }
     };
 
+    // 자동 로그인
+    const handleAutoLogin = async () => {
+        try {
+            // MongoDB에서 랜덤 유저 가져오기
+            const userResponse = await fetch("http://localhost:9000/api/users/randomUser")
+            const userData = await userResponse.json();
+
+            if (!userData) {
+                alert("유저 정보를 가져올 수 없습니다.");
+                return;
+            }
+            console.log("가져온 랜덤 유저 정보:", userData);
+
+            // 해당 유저로 로그인 요청 보내기
+            const loginResponse = await fetch("http://localhost:9000/api/users/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId: userData.userId, userPassword: userData.userPassword }),
+                credentials: "include",
+            });
+
+            console.log("자동 로그인 응답 상태:", loginResponse.status);
+            const loginData = await loginResponse.json();
+            console.log("자동 로그인 응답 데이터:", loginData);
+
+            if (loginData.accessToken) {
+                localStorage.setItem("accessToken", loginData.accessToken);
+                window.location.href = "/";
+            } else {
+                alert("자동 로그인 실패");
+            }
+        } catch (err) {
+            console.error("자동 로그인 오류:", err);
+            alert("자동 로그인 오류");
+        }
+    }
+
     return (
         <div className="flex justify-center items-center min-h-screen bg-gray-100">
             <div className="w-full max-w-md bg-white p-6 rounded-lg shadow-lg">
@@ -66,6 +103,12 @@ export default function LoginPage() {
                     className="w-full bg-gray-700 text-white py-2 rounded-lg hover:bg-gray-600 transition duration-200"
                 >
                     로그인
+                </button>
+                <button
+                    onClick={handleAutoLogin}
+                    className="w-full bg-gray-700 text-white py-2 rounded-lg hover:bg-gray-600 transition duration-200 mt-4"
+                >
+                    자동로그인
                 </button>
             </div>
         </div>

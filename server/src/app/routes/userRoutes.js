@@ -24,6 +24,9 @@ class UserRoutes {
         this.router.get('/auth', this.authMiddleware.authenticateToken.bind(this.authMiddleware), (req, res) => {
             res.json({ user: req.user });
         });
+
+        // 랜덤 유저 가져오기
+        this.router.get('/randomUser', this.userController.getRandomUser.bind(this.userController));
     }
 }
 

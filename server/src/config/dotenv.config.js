@@ -6,7 +6,7 @@ class DotenvConfig {
     static load() {
         // const envPath = path.resolve(process.cwd(), '.env');
         const envPathForMac = path.resolve(__dirname, '../../.env');
-        const envPathForWindow = path.resolve(__dirname, '../../env');
+        const envPathForWindow = path.resolve(__dirname, '../../.env');
         const envPath = fs.existsSync(envPathForMac) ? envPathForMac : envPathForWindow;
         console.log(`Loaded ${envPath}`);
         const result = dotenv.config({ path: envPath });

@@ -1,4 +1,5 @@
 const {UserService} = require('../services/userService');
+const User = require("../models/User");
 
 class UserController {
     constructor() {
@@ -91,6 +92,35 @@ class UserController {
             return res.status(200).json({message:'logout'});
         }catch (err){
             res.status(400).json({message : 'Logout failed'});
+        }
+    }
+
+    // 로그인 시 랜덤 유저 가져오기
+    async getRandomUser(req, res) {
+        try {
+            console.log("getRandomUser 함수 시작");
+            // 전체 유저 수 가져오기
+            const userCount = await User.countDocuments();
+            console.log("userCount: ",userCount)
+            if (userCount === 0) {
+                return res.status(404).json({ message: "유저 없음" });
+            }
+
+            // 랜덤 인덱스 생성
+            const randomIndex = Math.floor(Math.random() * userCount);
+
+            // 해당 인덱스에서 유저 한 명 가져오기
+            const randomUser = await User.findOne().skip(randomIndex);
+
+            if (!randomUser) {
+                return res.status(404).json({ message: "유저를 찾을 수 없음" });
+            }
+
+            console.log("랜덤으로 가져온 유저:", randomUser);
+            res.json({ userId: randomUser.userid, userPassword: randomUser.password });
+        } catch (error) {
+            console.error("랜덤 유저 조회 오류:", error);
+            res.status(500).json({ message: "서버 오류", error: error.message });
         }
     }
 
