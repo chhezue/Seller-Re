@@ -13,8 +13,13 @@ class ProductRoutes {
     }
 
     initializeRoutes() {
-        //게시판 전체보기
+        // 상품 목록 출력
+        // GET /api/products/
         this.router.get('/', this.productController.getProducts.bind(this.productController));
+
+        // 상품 상세 정보 조회
+        // GET /api/products/:id
+        this.router.get('/:id', this.productController.getDetailedProduct.bind(this.productController));
         
         //게시판 글쓰기 전 임시저장글 확인
         this.router.get('/temp', this.authMiddleware.authenticateToken.bind(this.authMiddleware), this.productController.getTempPostProduct.bind(this.productController));
