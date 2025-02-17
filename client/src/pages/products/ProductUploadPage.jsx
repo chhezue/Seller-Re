@@ -1,5 +1,5 @@
-import React, {useState, useRef, useEffect} from "react";
-import {useNavigate} from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function ProductUploadPage() {
     const [categories, setCategories] = useState([]); // 카테고리 상태
@@ -17,7 +17,7 @@ export default function ProductUploadPage() {
 
     // 카테고리 데이터를 API에서 불러오는 useEffect
     useEffect(() => {
-        fetch("http://localhost:9000/api/products/categories", {method: "GET"})
+        fetch("http://localhost:9000/api/products/categories", { method: "GET" })
             .then((response) => response.json())
             .then((data) => setCategories(Array.isArray(data) ? data : []))
             .catch((error) => {
@@ -40,7 +40,6 @@ export default function ProductUploadPage() {
             .then((data) => {
                 if (data && !hasConfirmedTempProduct) {
                     // Alert를 한번만 띄우도록
-                    console.log(`Alert shown count: 1`); // alertCount를 없애고, 한번만 호출하도록 설정
                     const userConfirmed = window.confirm("임시 저장된 글이 있습니다. 이어서 작성하시겠습니까?");
 
                     if (userConfirmed) {
@@ -49,8 +48,14 @@ export default function ProductUploadPage() {
                         setTradeType(data.transactionType === "판매" ? "sale" : "free");
                         setPrice(data.price);
                         setDescription(data.description);
-                        setImagePreviews(data.images || []);
-                        setImageFiles(data.images || []);
+
+                        // Google Drive 링크 변환 후 미리보기로 추가
+                        if (data.fileUrls && Array.isArray(data.fileUrls)) {
+                            console.log(data.fileUrls);
+                            const convertedUrls = data.fileUrls.map(convertGoogleDriveUrl);
+                            setImagePreviews(convertedUrls);
+                            console.log("Updated imagePreviews:", convertedUrls);
+                        }
                     } else {
                         fetch("http://localhost:9000/api/products/temp", {
                             method: "DELETE",
@@ -76,6 +81,19 @@ export default function ProductUploadPage() {
                 console.error("임시 저장 글 불러오기 오류:", error);
             });
     }, []); // 빈 배열을 의존성으로 넣어 한 번만 호출되도록
+
+    const convertGoogleDriveUrl = (url) => {
+        const match = url.match(/id=([^&]+)/);
+        console.log('match : ', match);
+        // return match ? `https://drive.google.com/uc?export=view&id=${match[1]}` : url;
+        return match ? `https://lh3.google.com/u/0/d/${match[1]}` : url;
+    };
+
+    // imagePreviews 변경 시 로그 찍기
+    useEffect(() => {
+        console.log("Updated imagePreviews:", imagePreviews);
+        console.log("ImagePreviews length:", imagePreviews.length);
+    }, [imagePreviews]);
 
     const handleImageFiles = (files) => {
         const fileArray = Array.from(files);
@@ -222,14 +240,18 @@ export default function ProductUploadPage() {
                       className="w-full p-4 border rounded-lg h-36 focus:ring-2 focus:ring-blue-500"></textarea>
 
             {/* 사진 업로드 */}
-            <label className="block text-gray-700 font-medium mt-6 mb-2">사진 업로드</label>
-            <div onClick={() => fileInputRef.current.click()}
-                 className={`w-full h-56 border-2 border-dashed rounded-lg flex items-center justify-center ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"}`}>
-                <input type="file" ref={fileInputRef} accept="image/*" multiple className="hidden"
-                       onChange={handleImageUpload}/>
-                {imagePreviews.length ? imagePreviews.map((src, index) => <img key={index} src={src}
-                                                                               className="w-24 h-24 object-cover rounded-lg mx-2"/>) :
-                    <span>이미지를 업로드하세요</span>}
+            <label className="block text-gray-700 font-medium mb-2">사진 업로드</label>
+            <div className={`w-full h-56 border-2 border-dashed rounded-lg flex flex-wrap items-center justify-center ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"}`}
+                 onClick={() => fileInputRef.current.click()}
+                 onDragOver={handleDragOver}
+                 onDragLeave={handleDragLeave}
+                 onDrop={handleDrop}>
+                <input type="file" ref={fileInputRef} accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
+                {imagePreviews.length ? (
+                    imagePreviews.map((src, index) => (
+                        <img key={index} src={src} alt={`Uploaded ${index}`} className="w-24 h-24 object-cover rounded-lg mx-2" />
+                    ))
+                ) : <span>이미지를 업로드하세요</span>}
             </div>
 
             {/* 버튼 */}
@@ -241,6 +263,16 @@ export default function ProductUploadPage() {
                 <button onClick={(e) => handleSubmit(e, false)}
                         className="px-6 py-3 bg-blue-500 text-white rounded-lg text-lg">등록
                 </button>
+            </div>
+
+            {/* test */}
+            <div>
+                <img src={'https://drive.google.com/uc?id=1-vKmLYKJyNs3D7FqDCRfD2PFUkb6aS0n'} alt="Google Drive Image"/>
+                <img src={'https://drive.google.com/uc?export=view&id=1-vKmLYKJyNs3D7FqDCRfD2PFUkb6aS0n'} alt="Google Drive Image"/>
+                <img src={'https://lh3.google.com/u/0/d/119a88yF-U0E74S63cMtzKaPGPDhtKrm4=w1610-h992-iv1'} alt="Google Drive Image"/>
+                <img src={'https://lh3.google.com/u/0/d/119a88yF-U0E74S63cMtzKaPGPDhtKrm4=w1610-h992-iv1'} alt="Google Drive Image"/>
+                <img src={'https://lh3.googleusercontent.com/d/1jnnrhKtAWPAF1ceRmGGHzgtS0OajdSJ0'} alt="Google Drive Image" />
+
             </div>
         </div>
     );

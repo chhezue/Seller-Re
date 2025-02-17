@@ -1,16 +1,10 @@
 const path = require("path");
 const fs = require("fs");
-const {google} = require("googleapis");
-
-// Scope	설명
-// https://www.googleapis.com/auth/drive.file	 사용자가 API로 업로드한 파일만 접근 가능 
-// https://www.googleapis.com/auth/drive	 드라이브 전체 읽기/쓰기 가능 
-// https://www.googleapis.com/auth/drive.readonly	 모든 파일 읽기만 가능
-// https://www.googleapis.com/auth/drive.appdata	 앱 전용 데이터 폴더 접근 가능
+const { google } = require("googleapis");
 
 class GoogleDriveService {
     constructor() {
-        this.KEYFILEPATH = path.join(__dirname, '../config/seller-re-ade8bf3515fb.json');
+        this.KEYFILEPATH = path.join(__dirname, '../config/seller-re-8b621690cadb.json');
         this.SCOPES = ["https://www.googleapis.com/auth/drive.file"];
 
         this.googleAuth = new google.auth.GoogleAuth({
@@ -18,14 +12,28 @@ class GoogleDriveService {
             scopes: this.SCOPES,
         });
 
-        this.drive = google.drive({version: 'v3', auth: this.googleAuth});
+        this.drive = google.drive({ version: 'v3', auth: this.googleAuth });
+    }
+
+    async authenticate() {
+        try {
+            const authClient = await this.googleAuth.getClient();
+            console.log('Authenticated as:', authClient.email);
+            return authClient;
+        } catch (err) {
+            console.error('Error during authentication:', err);
+            throw new Error('Authentication failed');
+        }
     }
 
     async uploadFile(filePath, fileName) {
         try {
+            // 인증 확인
+            await this.authenticate();
+
             const fileMetadata = {
                 name: fileName,
-                parents: ['18nkgajwbBNJNobmKqViuzpmCSIrqsko5'],    // googleDrive 폴더id
+                parents: ['18nkgajwbBNJNobmKqViuzpmCSIrqsko5'],    // Google Drive 폴더 ID
             };
 
             const media = {
@@ -39,7 +47,7 @@ class GoogleDriveService {
                 fields: 'id',
             });
 
-            //파일을 공개로 설정. url로 접근 가능
+            // 파일을 공개로 설정하여 URL로 접근 가능하게 하기
             await this.drive.permissions.create({
                 fileId: response.data.id,
                 requestBody: {
@@ -57,4 +65,4 @@ class GoogleDriveService {
     }
 }
 
-module.exports = {GoogleDriveService};
+module.exports = { GoogleDriveService };
