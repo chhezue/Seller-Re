@@ -1,34 +1,139 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function ProductUploadPage() {
-    const [categories, setCategories] = useState([]);
+    const [categories, setCategories] = useState([]); // 카테고리 상태
     const [productName, setProductName] = useState(""); // 상품명 상태
     const [tradeType, setTradeType] = useState("sale");
     const [price, setPrice] = useState("");
     const [description, setDescription] = useState("");
     const [selectedCategory, setSelectedCategory] = useState(""); // 선택된 카테고리
-    const [images, setImages] = useState([]); // 미리보기 URL
-    const [imageFiles, setImageFiles] = useState([]); // 실제 파일 저장
+    const [imagePreviews, setImagePreviews] = useState([]); // 이미지 미리보기
+    const [imageFiles, setImageFiles] = useState([]); // 이미지 파일 상태
+    const [isDragging, setIsDragging] = useState(false); // 드래그 상태
     const fileInputRef = useRef(null);
+    const navigate = useNavigate(); // 뒤로가기 위한 navigate 사용
+    const [hasConfirmedTempProduct, setHasConfirmedTempProduct] = useState(false); // 확인 여부 상태
 
+    // 카테고리 데이터를 API에서 불러오는 useEffect
     useEffect(() => {
         fetch("http://localhost:9000/api/products/categories", { method: "GET" })
-            .then(response => response.json())
-            .then(data => setCategories(Array.isArray(data) ? data : []))
-            .catch(error => {
-                console.error("Error fetching categories:", error);
+            .then((response) => response.json())
+            .then((data) => setCategories(Array.isArray(data) ? data : []))
+            .catch((error) => {
+                console.error("카테고리 불러오기 실패:", error);
                 setCategories([]);
             });
-    }, []);
+    }, []); // 빈 배열을 의존성으로 넣어 한 번만 호출되도록
 
-    const handleImageUpload = (e) => {
-        if (imageFiles.length >= 5) return;
-        const files = Array.from(e.target.files);
-        if (files.length + imageFiles.length > 5) return;
+    useEffect(() => {
+        const token = localStorage.getItem("accessToken");
+        if (!token || hasConfirmedTempProduct) return; // 이미 확인한 경우 리턴
 
-        const newImages = files.map((file) => URL.createObjectURL(file));
-        setImages((prev) => [...prev, ...newImages]);
-        setImageFiles((prev) => [...prev, ...files]); // 실제 파일 저장
+        fetch("http://localhost:9000/api/products/temp", {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data && !hasConfirmedTempProduct) {
+                    // Alert를 한번만 띄우도록
+                    const userConfirmed = window.confirm("임시 저장된 글이 있습니다. 이어서 작성하시겠습니까?");
+
+                    if (userConfirmed) {
+                        setProductName(data.name);
+                        setSelectedCategory(data.category);
+                        setTradeType(data.transactionType === "판매" ? "sale" : "free");
+                        setPrice(data.price);
+                        setDescription(data.description);
+
+                        // Google Drive 링크 변환 후 미리보기로 추가
+                        if (data.fileUrls && Array.isArray(data.fileUrls)) {
+                            console.log(data.fileUrls);
+                            const convertedUrls = data.fileUrls.map(convertGoogleDriveUrl);
+                            setImagePreviews(convertedUrls);
+                            console.log("Updated imagePreviews:", convertedUrls);
+                        }
+                    } else {
+                        fetch("http://localhost:9000/api/products/temp", {
+                            method: "DELETE",
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        })
+                            .then((deleteResponse) => {
+                                if (deleteResponse.ok) {
+                                    alert("임시 저장된 글이 삭제되었습니다.");
+                                } else {
+                                    alert("임시 글 삭제 실패");
+                                }
+                            })
+                            .catch((error) => {
+                                console.error("임시 글 삭제 오류:", error);
+                            });
+                    }
+                    setHasConfirmedTempProduct(true); // 확인 후 상태 변경
+                }
+            })
+            .catch((error) => {
+                console.error("임시 저장 글 불러오기 오류:", error);
+            });
+    }, []); // 빈 배열을 의존성으로 넣어 한 번만 호출되도록
+
+    const convertGoogleDriveUrl = (url) => {
+        const match = url.match(/id=([^&]+)/);
+        console.log('match : ', match);
+        // return match ? `https://drive.google.com/uc?export=view&id=${match[1]}` : url;
+        return match ? `https://lh3.google.com/u/0/d/${match[1]}` : url;
+    };
+
+    // imagePreviews 변경 시 로그 찍기
+    useEffect(() => {
+        console.log("Updated imagePreviews:", imagePreviews);
+        console.log("ImagePreviews length:", imagePreviews.length);
+    }, [imagePreviews]);
+
+    const handleImageFiles = (files) => {
+        const fileArray = Array.from(files);
+        const currentImagesCount = imagePreviews.length;
+        const remainingSlots = 5 - currentImagesCount;
+
+        if (remainingSlots > 0) {
+            const filesToProcess = fileArray.slice(0, remainingSlots);
+            const newImages = filesToProcess.map((file) => {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(file);
+                });
+            });
+
+            Promise.all(newImages).then((images) => {
+                setImagePreviews((prev) => [...prev, ...images]);
+                setImageFiles((prev) => [...prev, ...filesToProcess]);
+            });
+        }
+    };
+
+    const handleImageUpload = (event) => {
+        handleImageFiles(event.target.files);
+    };
+
+    const handleDragOver = (event) => {
+        event.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = () => {
+        setIsDragging(false);
+    };
+
+    const handleDrop = (event) => {
+        event.preventDefault();
+        setIsDragging(false);
+        handleImageFiles(event.dataTransfer.files);
     };
 
     const handleSubmit = async (e, isTemporary = false) => {
@@ -60,12 +165,13 @@ export default function ProductUploadPage() {
                 method: "POST",
                 body: formData,
                 headers: {
-                    "Authorization": `Bearer ${token}`,
-                }
+                    Authorization: `Bearer ${token}`,
+                },
             });
 
             if (response.ok) {
                 alert(isTemporary ? "상품이 임시 저장되었습니다!" : "상품이 등록되었습니다!");
+                navigate("/"); // 상품 등록 후 메인 페이지로 이동
             } else {
                 alert("상품 저장 실패");
             }
@@ -75,116 +181,99 @@ export default function ProductUploadPage() {
     };
 
     return (
-        <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-lg">
-            <h2 className="text-2xl font-semibold mb-4">상품 등록</h2>
+        <div className="max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-lg">
+            <h2 className="text-3xl font-semibold mb-6">상품 등록</h2>
 
-            <form onSubmit={(e) => handleSubmit(e, false)}>
-                <label className="block font-medium mb-2">카테고리 선택</label>
-                <select
-                    className="w-full p-2 border rounded mb-4"
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                >
-                    <option value="" disabled>카테고리를 선택해주세요</option>
-                    {categories.length > 0 ? (
-                        categories.map((category) => (
-                            <option key={category._id} value={category._id}>{category.name}</option>
-                        ))
-                    ) : (
-                        <option>카테고리를 불러오는 중...</option>
-                    )}
-                </select>
-
-                <label className="block font-medium mb-2">상품명</label>
-                <input
-                    type="text"
-                    maxLength="40"
-                    placeholder="상품명을 입력해주세요"
-                    value={productName}
-                    onChange={(e) => setProductName(e.target.value)}
-                    className="w-full p-2 border rounded mb-4"
-                />
-
-                <label className="block font-medium mb-2">거래 방식</label>
-                <div className="flex mb-4">
-                    <label className="mr-4">
-                        <input
-                            type="radio"
-                            value="sale"
-                            checked={tradeType === "sale"}
-                            onChange={() => setTradeType("sale")}
-                        /> 판매하기
-                    </label>
-                    <label>
-                        <input
-                            type="radio"
-                            value="free"
-                            checked={tradeType === "free"}
-                            onChange={() => setTradeType("free")}
-                        /> 나눔하기
-                    </label>
-                </div>
-
-                {tradeType === "sale" && (
-                    <input
-                        type="number"
-                        placeholder="가격을 입력해주세요"
-                        value={price}
-                        onChange={(e) => setPrice(e.target.value)}
-                        className="w-full p-2 border rounded mb-4"
-                    />
+            {/* 카테고리 선택 */}
+            <label className="block text-gray-700 font-medium mb-2">카테고리 선택</label>
+            <select
+                className="w-full p-4 border rounded-lg mb-6"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+            >
+                <option value="" disabled>카테고리를 선택해주세요</option>
+                {categories.length > 0 ? (
+                    categories.map((category) => (
+                        <option key={category._id} value={category._id}>{category.name}</option>
+                    ))
+                ) : (
+                    <option>카테고리 불러오는 중...</option>
                 )}
+            </select>
 
-                <label className="block font-medium mb-2">상품 설명</label>
-                <textarea
-                    maxLength="500"
-                    placeholder="상품을 설명해주세요"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="w-full p-2 border rounded mb-4 h-32"
-                ></textarea>
+            {/* 상품명 입력 */}
+            <label className="block text-gray-700 font-medium mb-2">상품명</label>
+            <input
+                type="text"
+                maxLength="40"
+                placeholder="상품명을 입력해주세요"
+                value={productName}
+                onChange={(e) => setProductName(e.target.value)}
+                className="w-full p-4 border rounded-lg mb-6 focus:ring-2 focus:ring-blue-500"
+            />
 
-                <label className="block font-medium mb-2">상품 이미지 (최대 5개)</label>
-                <div className="flex space-x-2 mb-4">
-                    {images.map((img, index) => (
-                        <img
-                            key={index}
-                            src={img}
-                            alt="상품 이미지"
-                            className="w-20 h-20 object-cover rounded cursor-pointer"
-                        />
-                    ))}
-                    {images.length < 5 && (
-                        <button
-                            type="button"
-                            onClick={() => fileInputRef.current.click()}
-                            className="w-20 h-20 flex items-center justify-center border rounded"
-                        >
-                            +
-                        </button>
-                    )}
+            {/* 거래 방식 선택 */}
+            <label className="block text-gray-700 font-medium mb-2">거래 방식</label>
+            <div className="flex space-x-4 mb-6">
+                <button onClick={() => setTradeType("sale")}
+                        className={`flex-1 py-3 rounded-lg text-lg ${tradeType === "sale" ? "bg-blue-500 text-white" : "bg-gray-200"}`}>판매하기
+                </button>
+                <button onClick={() => setTradeType("free")}
+                        className={`flex-1 py-3 rounded-lg text-lg ${tradeType === "free" ? "bg-blue-500 text-white" : "bg-gray-200"}`}>나눔하기
+                </button>
+            </div>
+
+            {/* 가격 입력 */}
+            {tradeType === "sale" && (
+                <div className="relative mb-6">
+                    <input type="number" placeholder="가격을 입력해주세요" value={price}
+                           onChange={(e) => setPrice(e.target.value)}
+                           className="w-full p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 pr-12"/>
+                    <span className="absolute right-4 top-3 text-gray-500 text-xl">원</span>
                 </div>
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={handleImageUpload}
-                />
+            )}
 
-                <div className="flex justify-between mt-4">
-                    <button type="button" className="px-4 py-2 bg-gray-300 rounded">취소</button>
-                    <button
-                        type="button"
-                        onClick={(e) => handleSubmit(e, true)}
-                        className="px-4 py-2 bg-yellow-500 text-white rounded"
-                    >
-                        임시 저장
-                    </button>
-                    <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">등록</button>
-                </div>
-            </form>
+            {/* 상품 설명 */}
+            <label className="block text-gray-700 font-medium mb-2">상품 설명</label>
+            <textarea maxLength="500" placeholder="상품을 설명해주세요" value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      className="w-full p-4 border rounded-lg h-36 focus:ring-2 focus:ring-blue-500"></textarea>
+
+            {/* 사진 업로드 */}
+            <label className="block text-gray-700 font-medium mb-2">사진 업로드</label>
+            <div className={`w-full h-56 border-2 border-dashed rounded-lg flex flex-wrap items-center justify-center ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"}`}
+                 onClick={() => fileInputRef.current.click()}
+                 onDragOver={handleDragOver}
+                 onDragLeave={handleDragLeave}
+                 onDrop={handleDrop}>
+                <input type="file" ref={fileInputRef} accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
+                {imagePreviews.length ? (
+                    imagePreviews.map((src, index) => (
+                        <img key={index} src={src} alt={`Uploaded ${index}`} className="w-24 h-24 object-cover rounded-lg mx-2" />
+                    ))
+                ) : <span>이미지를 업로드하세요</span>}
+            </div>
+
+            {/* 버튼 */}
+            <div className="flex justify-end space-x-4 mt-8">
+                <button onClick={() => navigate(-1)} className="px-6 py-3 bg-gray-300 rounded-lg text-lg">취소</button>
+                <button onClick={(e) => handleSubmit(e, true)}
+                        className="px-6 py-3 bg-yellow-500 text-white rounded-lg text-lg">임시 저장
+                </button>
+                <button onClick={(e) => handleSubmit(e, false)}
+                        className="px-6 py-3 bg-blue-500 text-white rounded-lg text-lg">등록
+                </button>
+            </div>
+
+            {/* test */}
+            <div>
+                <img src={'https://drive.google.com/uc?id=1-vKmLYKJyNs3D7FqDCRfD2PFUkb6aS0n'} alt="Google Drive Image"/>
+                <img src={'https://drive.google.com/uc?export=view&id=1-vKmLYKJyNs3D7FqDCRfD2PFUkb6aS0n'} alt="Google Drive Image"/>
+                <img src={'https://lh3.google.com/u/0/d/119a88yF-U0E74S63cMtzKaPGPDhtKrm4=w1610-h992-iv1'} alt="Google Drive Image"/>
+                <img src={'https://lh3.google.com/u/0/d/119a88yF-U0E74S63cMtzKaPGPDhtKrm4=w1610-h992-iv1'} alt="Google Drive Image"/>
+                <img src={'https://lh3.googleusercontent.com/d/1jnnrhKtAWPAF1ceRmGGHzgtS0OajdSJ0'} alt="Google Drive Image" />
+
+            </div>
         </div>
     );
 }

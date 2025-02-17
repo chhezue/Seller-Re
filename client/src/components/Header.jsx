@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function Header() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [username, setUsername] = useState("");
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -12,30 +13,31 @@ export default function Header() {
             if (accessToken) {
                 refreshAccessToken();
             }
-        }, 55 * 1000); // 55초마다 토큰 갱신
+        }, 55 * 1000);
         return () => clearInterval(interval);
     }, []);
 
     const checkLoginStatus = () => {
         const accessToken = localStorage.getItem("accessToken");
+        const storedUsername = localStorage.getItem("username");
+
         if (accessToken) {
             setIsLoggedIn(true);
+            setUsername(storedUsername || "사용자");
         }
     };
 
     const refreshAccessToken = async () => {
         const accessToken = localStorage.getItem("accessToken");
-        if (!accessToken) return; // accessToken 없으면 서버 요청 안 함
+        if (!accessToken) return;
 
         try {
             const response = await fetch('http://localhost:9000/api/users/refresh', {
                 method: 'POST',
-                credentials: 'include', // 쿠키에 저장된 Refresh Token 포함
+                credentials: 'include',
             });
 
-            if (!response.ok) {
-                throw new Error("Failed to refresh access token");
-            }
+            if (!response.ok) throw new Error("Failed to refresh access token");
 
             const data = await response.json();
             if (data.accessToken) {
@@ -51,51 +53,43 @@ export default function Header() {
     };
 
     const handleLogout = async () => {
-        const accessToken = localStorage.getItem("accessToken");
-        if (!accessToken) return; // accessToken 없으면 서버 요청 안 함
-
-        try {
-            const response = await fetch('http://localhost:9000/api/users/logout', {
-                method: 'POST',
-                credentials: 'include', // 쿠키 포함 (refreshToken 전송)
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${accessToken}`
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to logout");
-            }
-
-            localStorage.removeItem("accessToken");
-            document.cookie = "refreshToken=; max-age=0"; // refreshToken 삭제
-            setIsLoggedIn(false);
-            navigate("/login");
-        } catch (err) {
-            console.error("로그아웃 실패", err);
-        }
-    };
-
-    const handleMyPage = () => {
-        navigate("/my-page");
-    };
-
-    const handleProductUpload = () => {
-        navigate("/product/upload");
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("username");
+        setIsLoggedIn(false);
+        navigate("/login");
     };
 
     return (
-        <header>
-            {isLoggedIn ? (
-                <>
-                    <button onClick={handleMyPage}>마이페이지</button>
-                    <button onClick={handleLogout}>로그아웃</button>
-                    <button onClick={handleProductUpload}>상품 등록</button>
-                </>
-            ) : (
-                <button onClick={() => navigate("/login")}>로그인</button>
-            )}
+        <header className="border-b border-gray-300 p-4">
+            <div className="max-w-5xl mx-auto flex justify-between items-center">
+                {/* 로고 */}
+                <h1 className="text-xl font-bold cursor-pointer" onClick={() => navigate("/")}>
+                    Seller-RE
+                </h1>
+
+                {/* 로그인 상태에 따른 UI 변경 */}
+                {isLoggedIn ? (
+                    <div className="flex items-center space-x-4">
+                        <span className="text-gray-700">{username}</span>
+                        <button className="px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-600">
+                            편집하기
+                        </button>
+                        <button
+                            onClick={handleLogout}
+                            className="px-3 py-1 border border-gray-500 text-gray-700 rounded hover:bg-gray-100"
+                        >
+                            로그아웃
+                        </button>
+                    </div>
+                ) : (
+                    <button
+                        onClick={() => navigate("/login")}
+                        className="px-3 py-1 border border-gray-500 text-gray-700 rounded hover:bg-gray-100"
+                    >
+                        로그인
+                    </button>
+                )}
+            </div>
         </header>
     );
 }
