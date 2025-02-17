@@ -2,6 +2,9 @@ const Category = require('../models/Category');
 const Product = require("../models/Product");
 const Region = require("../models/Region");
 const DetailedProduct = require("../models/DetailedProduct");
+const Favorite = require("../models/Favorite");
+const ProductFile = require("../models/ProductFile");
+const User = require("../models/User");
 
 class ProductService {
     constructor() {
@@ -68,36 +71,32 @@ class ProductService {
     async getDetailedProduct(id) {
         try {
             // 불러와야 하는 것들: 이미지, 카테고리, 수정일, 찜 개수, 상품명, 상품 소개, 거래 희망 장소, 작성자
-            // product: 카테고리, 수정일, 상품명, 상품 소개
-            // productFile: 이미지
-            // favorite: 찜 개수
-            // user: 작성자
-            // 거래 희망 장소
-
-            const productData = new ProductData();
+            // 불러와서 DetailedProduct 객체에 넣음.
+            const detailedProduct = new DetailedProduct();
 
             // product 데이터 조회
-            const product = await Product.findOne({ _id: objectId });
-            productData.product = product;
+            const product = await Product.findOne({ _id: id });
+            detailedProduct.product = product;
 
             // productFile 데이터 조회
-            const productFiles = await ProductFile.find({ productId: objectId });
-            productData.productFile = productFiles;
+            const productFiles = await ProductFile.find({ product: id });
+            detailedProduct.productFile = productFiles;
 
             // favorite 개수 조회
-            const favoriteCount = await Favorite.countDocuments({ productId: objectId });
-            productData.favoriteCount = favoriteCount;
+            // countDocuments: 문서의 개수 조회
+            const favoriteCount = await Favorite.countDocuments({ productId: id });
+            detailedProduct.favoriteCount = favoriteCount;
 
             // user (작성자) 정보 조회
-            const seller = await User.findById(product.sellerId);
-            productData.seller = seller;
+            const seller = await User.findById(product.seller);
+            detailedProduct.seller = seller;
 
-            // 거래 희망 장소 조회 (예시)
-            productData.location = product.location; // product 모델에 location 필드가 있다고 가정
+            // 거래 희망 장소 조회 어떻게..
+            // detailedProduct.location = product.location;
 
-
+            return detailedProduct;
         } catch (error) {
-            console.error("상품 조회 중 오류 발생:", error);
+            console.error("상품 상세 출력 중 오류 발생:", error);
             throw error;
         }
     }

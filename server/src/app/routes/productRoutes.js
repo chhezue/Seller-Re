@@ -32,7 +32,13 @@ class ProductRoutes {
         //     res.json({ user: req.user });
         // });
 
+        // 상품 목록 출력
+        // GET /api/products/
         this.router.get('/', this.productController.getProducts.bind(this.productController));
+
+        // 상품 상세 정보 조회
+        // GET /api/products/:id
+        this.router.get('/:id', this.productController.getDetailedProduct.bind(this.productController));
     }
 }
 

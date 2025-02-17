@@ -1,5 +1,8 @@
 const dotenv = require('dotenv');
 const path = require('path');
+const fs = require('fs'); // Add this line at the top
+
+// ... rest of your dotenv.config.js code
 
 class DotenvConfig {
     static load() {
