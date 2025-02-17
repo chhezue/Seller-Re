@@ -1,6 +1,5 @@
 const {ProductService} = require('../services/productService');
 const {GoogleDriveService} = require('../../utils/googleDriveService');
-const Product = require('../models/Product');
 const fs = require("node:fs");
 
 class ProductController {
@@ -20,16 +19,16 @@ class ProductController {
     }
 
     // 지역 가져오기
-    async getRegions(req, res) {
-        console.log('getRegions');
-        try {
-            const regions = await this.productService.fetchAllRegions();
-            // console.log('region : ', regions);
-            res.status(200).json(regions);
-        } catch (err) {
-            res.status(500).json({error: err.message});
-        }
-    }
+    // async getRegions(req, res) {
+    //     console.log('getRegions');
+    //     try {
+    //         const regions = await this.productService.fetchAllRegions();
+    //         // console.log('region : ', regions);
+    //         res.status(200).json(regions);
+    //     } catch (err) {
+    //         res.status(500).json({error: err.message});
+    //     }
+    // }
 
     async postProduct(req, res, next) {
         console.log('postProduct ');
@@ -86,7 +85,7 @@ class ProductController {
         }
     }
 
-    // 상품 가져오기
+    // 상품 목록 가져오기
     async getProducts(req, res, next) {
         console.log('getProduct ');
 
@@ -98,7 +97,7 @@ class ProductController {
 
         try {
             const products = await this.productService.getProducts(level1, level2, category);
-            return res.status(201).json({ message: '상품 조회 성공', products: products });
+            return res.status(201).json({ message: '상품 목록 조회 성공', products: products });
         } catch (err) {
             next(err); // 글로벌 에러 핸들러로 전달
         }
@@ -121,6 +120,17 @@ class ProductController {
         
     }
 
+    // 상품 상세 가져오기
+    async getDetailedProduct(req, res, next) {
+        console.log('getDetailedProduct ');
+
+        try {
+            const detailedProduct = await this.productService.getDetailedProduct(req.params.id);
+            return res.status(200).json({ message: '상품 상세 조회 성공', detailedProduct: detailedProduct });
+        } catch (err) {
+            next(err); // 글로벌 에러 핸들러로 전달
+        }
+    }
 }
 
 module.exports = {ProductController};
