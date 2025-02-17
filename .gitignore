@@ -131,3 +131,12 @@ dist
 
 # Google api-key
 /server/src/config/*.json
+
+#.idea
+/.idea
+
+#package-lock.json
+package-lock.json
+
+#DS_Store
+.DS_Store
