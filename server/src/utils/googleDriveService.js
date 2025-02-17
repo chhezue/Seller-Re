@@ -4,7 +4,7 @@ const { google } = require("googleapis");
 
 class GoogleDriveService {
     constructor() {
-        this.KEYFILEPATH = path.join(__dirname, '../config/seller-re-8b621690cadb.json');
+        this.KEYFILEPATH = path.join(__dirname, '../config/seller-re-8433cca61115.json');
         this.SCOPES = ["https://www.googleapis.com/auth/drive.file"];
 
         this.googleAuth = new google.auth.GoogleAuth({
