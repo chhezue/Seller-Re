@@ -17,10 +17,6 @@ class ProductRoutes {
         // GET /api/products/
         this.router.get('/', this.productController.getProducts.bind(this.productController));
 
-        // 상품 상세 정보 조회
-        // GET /api/products/:id
-        this.router.get('/:id', this.productController.getDetailedProduct.bind(this.productController));
-        
         //게시판 글쓰기 전 임시저장글 확인
         this.router.get('/temp', this.authMiddleware.authenticateToken.bind(this.authMiddleware), this.productController.getTempPostProduct.bind(this.productController));
         // this.router.get('/temp', this.productController.getTempPostProduct.bind(this.productController));
@@ -33,6 +29,10 @@ class ProductRoutes {
 
         //카테고리 정보 받아오기
         this.router.get('/categories', this.productController.getCategories.bind(this.productController));
+
+        // 상품 상세 정보 조회
+        // GET /api/products/:id
+        this.router.get('/:id', this.productController.getDetailedProduct.bind(this.productController));
     }
 }
 
