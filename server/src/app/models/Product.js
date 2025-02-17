@@ -16,7 +16,7 @@ const ProductSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-        enum: ['판매중', '판매완료']
+        enum: ['판매중', '판매완료', '임시저장']
     },
     writeStatus: {
         type: String,
@@ -24,6 +24,8 @@ const ProductSchema = new mongoose.Schema({
         enum: ['임시저장', '등록']
     },
     region: { type: mongoose.Schema.Types.ObjectId, ref: 'Region' },
+    price : {type: Number, default: 0},
+    fileUrls: { type: [String], default: [] }
 },{
     versionKey : false, // __v 필드 비활성화
 });

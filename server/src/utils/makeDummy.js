@@ -165,10 +165,12 @@ class MakeDummy {
             const fetchData = async () => {
                 const users = await User.find();
                 const categories = await Category.find();
+                console.log('categories11', categories);
                 return { users, categories }; // 두 데이터를 함께 반환
             };
 
             const { users, categories } = await fetchData(); // fetchData 호출
+            // const { users, categories } =  fetchData(); // fetchData 호출
 
             const generateDummyProduct = (count) => {
                 const products = [];
@@ -176,13 +178,17 @@ class MakeDummy {
                 for (let i = 0; i < count; i++) {
                     const user = users[Math.floor(Math.random() * users.length)];
                     const category = categories[Math.floor(Math.random() * categories.length)];
+                    console.log('category', category);
 
+                    const createdAt = Date.now() + (9 * 60 * 60 * 1000);
                     const updatedAt = createdAt; // 초기에는 등록일 == 수정일로 설정
                     const deletedAt = null;
 
                     if (updatedAt < createdAt) {
                         throw new Error('수정일은 등록일보다 이전일 수 없습니다.');
                     }
+
+                    const writeStatus = Math.random() < 0.5 ? '임시저장' : '등록';
 
                     products.push({
                         name: `product${i + 1}`,
@@ -192,8 +198,8 @@ class MakeDummy {
                         updatedAt: null,
                         deletedAt: null,
                         seller: user._id,
-                        status: Math.random() < 0.5 ? '판매중' : '판매완료',
-                        writeStatus: Math.random() < 0.5 ? '임시저장' : '등록',
+                        status: writeStatus === '임시저장' ? '임시저장' : (Math.random() < 0.5 ? '판매중' : '판매완료'),
+                        writeStatus: writeStatus,
                         region: user.region
                     });
                 }

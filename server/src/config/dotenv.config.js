@@ -1,13 +1,15 @@
 const dotenv = require('dotenv');
 const path = require('path');
+const fs = require("node:fs");
 
 class DotenvConfig {
     static load() {
         // const envPath = path.resolve(process.cwd(), '.env');
-        const envPath = path.resolve(__dirname, '../../.env');
+        const envPathForMac = path.resolve(__dirname, '../../.env');
+        const envPathForWindow = path.resolve(__dirname, '../../env');
+        const envPath = fs.existsSync(envPathForMac) ? envPathForMac : envPathForWindow;
+        console.log(`Loaded ${envPath}`);
         const result = dotenv.config({ path: envPath });
-
-        console.log('dot env path : ', envPath);
 
         if (result.error) {
             console.error('환경 변수 파일(.env)을 로드하는 데 실패했습니다:', result.error);
