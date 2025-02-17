@@ -115,7 +115,7 @@ class ProductService {
     }
 
 
-    async deleteTempPostProductByUserId(userId) {
+    async deleteTempPostProductByUserId(userId) {}
 
 
     // 상품 상세 조회
