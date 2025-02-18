@@ -103,6 +103,66 @@ const userSwagger = {
             },
         },
     },
+
+    "/api/users/randomUser": {
+        get: {
+            summary: "랜덤 사용자 id, pw 가져오기",
+            description: "자동로그인 시 사용자 정보 랜덤하게 가져오기",
+            tags: ["Users"],
+            responses: {
+                200: {
+                    description: "성공적으로 사용자 정보 반환",
+                    content: {
+                        "application/json": {
+                            schema: {
+                                type: "object",
+                                properties: {
+                                    userId: { type: "string", example: "user1"},
+                                    userPassword: { type: "string", example: "1234"},
+                                },
+                            },
+                        },
+                    },
+                },
+                404: {
+                    description: "유저를 찾을 수 없음",
+                    content: {
+                        "application/json": {
+                            schema: {
+                                type: "object",
+                                properties: {
+                                    message: {
+                                        type: "string",
+                                        example: "유저를 찾을 수 없음"
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                500: {
+                    description: "서버 오류",
+                    content: {
+                        "application/json": {
+                            schema: {
+                                type: "object",
+                                properties: {
+                                    message: {
+                                        type: "string",
+                                        example: "서버 오류"
+                                    },
+                                    error: {
+                                        type: "string",
+                                        example: "Database connection failed"
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    },
 };
 
 module.exports = userSwagger;
