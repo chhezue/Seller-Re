@@ -64,6 +64,21 @@ class GoogleDriveService {
             throw new Error('Google Drive Service upload Error');
         }
     }
+    
+    async deleteFile(filePath) {
+        const drive = google.drive({version: 'v3', auth : this.googleAuth});
+        
+        for (const url of filePath) {
+            const fileId = this.extractFileIdFromUrl(url);
+            await drive.files.delete({fileId});
+        }
+    }
+
+    extractFileIdFromUrl(url) {
+        const regex = /(?:https?:\/\/drive\.google\.com\/.*?id=)([\w-]+)/;
+        const match = url.match(regex);
+        return match ? match[1] : null;
+    }
 }
 
 module.exports = { GoogleDriveService };
