@@ -91,6 +91,10 @@ class ProductService {
                 ]
             }).sort({createdAt: -1});
             
+            if (!product){
+                return null;
+            }
+            
             const category = await Category.findById(product.category).exec();
             const region = await Region.findById(product.region).exec();
 

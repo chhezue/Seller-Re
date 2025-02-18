@@ -16,6 +16,7 @@ export default function ProductUploadPage() {
     const [hasConfirmedTempProduct, setHasConfirmedTempProduct] = useState(false); // 확인 여부 상태
     const [regions, setRegions] = useState([]);
     const [selectedLevel1, setSelectedLevel1] = useState("");
+    const [selectedLevel2, setSelectedLevel2] = useState("");
     const [filteredLevel2, setFilteredLevel2] = useState([]);
     
     // 카테고리 데이터를 API에서 불러오는 useEffect
@@ -29,7 +30,7 @@ export default function ProductUploadPage() {
             });
     }, []); // 빈 배열을 의존성으로 넣어 한 번만 호출되도록
 
-
+    // 지역 데이터를 API에서 불러오는 useEffect
     useEffect(() => {
         fetch("http://localhost:9000/api/products/regions", { method: "GET" })
             .then((response) => response.json())
@@ -71,6 +72,10 @@ export default function ProductUploadPage() {
         })
             .then((response) => response.json())
             .then((data) => {
+                if (data.message === '임시 작성된 글이 없습니다.'){
+                    //임시 저장된 글이 없는 경우
+                    return;
+                }
                 if (data && !hasConfirmedTempProduct) {
                     // Alert를 한번만 띄우도록
                     const userConfirmed = window.confirm("임시 저장된 글이 있습니다. 이어서 작성하시겠습니까?");
@@ -176,6 +181,15 @@ export default function ProductUploadPage() {
             alert("카테고리를 선택해주세요.");
             return;
         }
+        // 선택한 level1과 level2를 가진 지역 찾기
+        const selectedRegion = regions.find(region =>
+            region.level1 === selectedLevel1 && region.level2 === selectedLevel2
+        );
+
+        if (!selectedRegion) {
+            alert("올바른 지역을 선택하세요.");
+            return;
+        }
 
         const formData = new FormData();
         formData.append("productName", productName);
@@ -184,6 +198,7 @@ export default function ProductUploadPage() {
         formData.append("price", tradeType === "sale" ? price : 0);
         formData.append("description", description);
         formData.append("isTemporary", isTemporary); // 임시 저장 여부 추가
+        formData.append("regionId", selectedRegion._id);
 
         imageFiles.forEach((file) => formData.append("images", file));
 
@@ -273,10 +288,15 @@ export default function ProductUploadPage() {
                       className="w-full p-4 border rounded-lg h-36 focus:ring-2 focus:ring-blue-500"></textarea>
 
             {/* 지역 선택 */}
-            <div>
-                <h2>지역 선택</h2>
-                <label>시/도 선택: </label>
-                <select onChange={(e) => setSelectedLevel1(e.target.value)} value={selectedLevel1}>
+            <div className="flex flex-col items-center p-6 bg-gray-100 rounded-lg shadow-lg w-full max-w-md mx-auto">
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">지역 선택</h2>
+
+                <label className="text-gray-700 font-medium mb-2">시/도 선택:</label>
+                <select
+                    onChange={(e) => setSelectedLevel1(e.target.value)}
+                    value={selectedLevel1}
+                    className="w-full p-2 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
                     <option value="">선택하세요</option>
                     {[...new Set(regions.map(region => region.level1))].map(level1 => (
                         <option key={level1} value={level1}>{level1}</option>
@@ -284,9 +304,13 @@ export default function ProductUploadPage() {
                 </select>
 
                 {selectedLevel1 && (
-                    <div>
-                        <label>구/군 선택: </label>
-                        <select>
+                    <div className="w-full">
+                        <label className="text-gray-700 font-medium mb-2">구/군 선택:</label>
+                        <select
+                            onChange={(e) => setSelectedLevel2(e.target.value)}
+                            value={selectedLevel2}
+                            className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
                             <option value="">선택하세요</option>
                             {filteredLevel2.map(region => (
                                 <option key={region._id} value={region.level2}>{region.level2}</option>

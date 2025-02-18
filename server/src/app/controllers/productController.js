@@ -110,6 +110,10 @@ class ProductController {
             console.log('userId : ', userId);
             const tempPost = await this.productService.getTempPostProductByUserId(userId);
             console.log('getTempPost', tempPost);
+            
+            if (tempPost === null) {
+                return res.status(404).json({message: '임시 작성된 글이 없습니다.'});
+            }
             return res.status(200).json(tempPost);
         }catch(err){
             
