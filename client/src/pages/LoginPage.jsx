@@ -21,6 +21,7 @@ export default function LoginPage() {
 
             if (data.accessToken) {
                 localStorage.setItem("accessToken", data.accessToken);
+                localStorage.setItem("user", JSON.stringify(data.user)); // localStorage는 string으로 저장
                 window.location.href = "/";
             } else {
                 alert("로그인 실패");
@@ -58,6 +59,7 @@ export default function LoginPage() {
 
             if (loginData.accessToken) {
                 localStorage.setItem("accessToken", loginData.accessToken);
+                localStorage.setItem("user", JSON.stringify(loginData.user)); // localStorage는 string으로 저장
                 window.location.href = "/";
             } else {
                 alert("자동 로그인 실패");

@@ -31,7 +31,7 @@ class UserController {
             const {userId, userPassword} = req.body;
             const user = await this.userService.authenticateUser(userId, userPassword);
             if (!user) {
-                return res.status(401).json({message: 'Invalid Credentials'});
+                return res.status(401).json({message: '아이디 또는 비밀번호가 올바르지 않습니다.'});
             }
 
             const {accessToken, refreshToken} = await this.userService.generateToken(user);
@@ -46,7 +46,14 @@ class UserController {
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7d
             });
 
-            res.status(200).json({user, accessToken});  //TODO. user 전부 반환이 아니라 userid, username, role, profileImage만 리턴시켜주기
+            // 로그인된 사용자 정보 반환
+            const userData = {
+                userId: user.userid,
+                username: user.username,
+                profileImage: user.profileImage,
+                region: user.region,
+            }
+            res.status(200).json({user: userData, accessToken});  //TODO. user 전부 반환이 아니라 userid, username, role, profileImage만 리턴시켜주기
         } catch (err) {
             console.log(err.message);
             console.log(err)
@@ -103,23 +110,19 @@ class UserController {
             const userCount = await User.countDocuments();
             console.log("userCount: ",userCount)
             if (userCount === 0) {
-                return res.status(404).json({ message: "유저 없음" });
+                return res.status(404).json({ message: "사용자 없음" });
             }
-
             // 랜덤 인덱스 생성
             const randomIndex = Math.floor(Math.random() * userCount);
-
             // 해당 인덱스에서 유저 한 명 가져오기
             const randomUser = await User.findOne().skip(randomIndex);
-
             if (!randomUser) {
-                return res.status(404).json({ message: "유저를 찾을 수 없음" });
+                return res.status(404).json({ message: "사용자를 찾을 수 없음" });
             }
-
-            console.log("랜덤으로 가져온 유저:", randomUser);
+            console.log("랜덤 사용자:", randomUser);
             res.json({ userId: randomUser.userid, userPassword: randomUser.password });
         } catch (error) {
-            console.error("랜덤 유저 조회 오류:", error);
+            console.error("랜덤 조회 오류:", error);
             res.status(500).json({ message: "서버 오류", error: error.message });
         }
     }
