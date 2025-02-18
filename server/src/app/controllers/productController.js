@@ -37,6 +37,8 @@ class ProductController {
             const { productName, tradeType, price, description, category, isTemporary, region } = req.body;
             const uploadTime = +new Date();
             const userId = req.user.id;
+            //파일명을 함께 저장. API를 이용하여 링크로 파일명을 검색하는것보다 DB에 저장.
+            const uploadFiles=[];
 
             if (!req.files || req.files.length < 1) {
                 return res.status(400).json({ error: '업로드 할 이미지가 없습니다.' });
@@ -46,6 +48,7 @@ class ProductController {
             const uploadPromises = req.files.map(async (file) => {
                 try {
                     const uploadFileName = userId + '-' + uploadTime + '-' + file.originalname;
+                    uploadFiles.push(uploadFileName);
                     return await this.googleDriveService.uploadFile(file.path, uploadFileName, process.env.GOOGLE_DRIVE_PRODUCTS_IMAGE);
                 } catch (uploadError) {
                     console.error(`파일 업로드 실패: ${file.filename}`, uploadError);
@@ -70,6 +73,7 @@ class ProductController {
                 status : '판매중',
                 region, //
                 fileUrls : imageUrls,
+                fileName : uploadFiles
             });
 
             return res.status(201).json({ message: '상품 등록 성공', product: newProduct });

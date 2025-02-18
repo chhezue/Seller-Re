@@ -78,9 +78,6 @@ class ProductService {
     //     });
     // }
     async getTempPostProductByUserId(userId) {
-        console.log('getTempPostProductByUserId 호출됨, userId:', userId); // 함수 호출 여부 확인
-
-
         try {
             const product = await Product.findOne({
                 seller: (userId),
@@ -90,7 +87,6 @@ class ProductService {
                     {DEL_YN: "N"} // DEL_YN이 "N"인 경우
                 ]
             }).sort({createdAt: -1});
-            
             if (!product){
                 return null;
             }

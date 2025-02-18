@@ -346,16 +346,16 @@ export default function ProductUploadPage() {
                 </button>
             </div>
 
-            {/* test */}
-            <div>
-                {/* 403 forbidden */}
-                <img src={'https://drive.google.com/uc?id=1-vKmLYKJyNs3D7FqDCRfD2PFUkb6aS0n'} alt="Google Drive Image"/>
-                <img src={'https://drive.google.com/uc?export=view&id=1-vKmLYKJyNs3D7FqDCRfD2PFUkb6aS0n'} alt="Google Drive Image"/>
-                {/* 302 Found */}
-                <img src={'https://lh3.google.com/u/0/d/119a88yF-U0E74S63cMtzKaPGPDhtKrm4=w1610-h992-iv1'} alt="Google Drive Image"/>
-                <img src={'https://lh3.googleusercontent.com/d/1jnnrhKtAWPAF1ceRmGGHzgtS0OajdSJ0'} alt="Google Drive Image" />
-
-            </div>
+            {/*/!* test *!/*/}
+            {/*<div>*/}
+            {/*    /!* 403 forbidden *!/*/}
+            {/*    <img src={'https://drive.google.com/uc?id=1-vKmLYKJyNs3D7FqDCRfD2PFUkb6aS0n'} alt="Google Drive Image"/>*/}
+            {/*    <img src={'https://drive.google.com/uc?export=view&id=1-vKmLYKJyNs3D7FqDCRfD2PFUkb6aS0n'} alt="Google Drive Image"/>*/}
+            {/*    /!* 302 Found *!/*/}
+            {/*    <img src={'https://lh3.google.com/u/0/d/119a88yF-U0E74S63cMtzKaPGPDhtKrm4=w1610-h992-iv1'} alt="Google Drive Image"/>*/}
+            {/*    <img src={'https://lh3.googleusercontent.com/d/1jnnrhKtAWPAF1ceRmGGHzgtS0OajdSJ0'} alt="Google Drive Image" />*/}
+            
+            {/*</div>*/}
         </div>
     );
 }

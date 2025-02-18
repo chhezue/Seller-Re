@@ -25,7 +25,8 @@ const ProductSchema = new mongoose.Schema({
     },
     region: { type: mongoose.Schema.Types.ObjectId, ref: 'Region' },
     price : {type: Number, default: 0},
-    fileUrls: { type: [String], default: [] }
+    fileUrls: { type: [String], default: [] },
+    fileName: { type: [String], default: [] }
 },{
     versionKey : false, // __v 필드 비활성화
 });

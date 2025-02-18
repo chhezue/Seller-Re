@@ -68,9 +68,31 @@ class GoogleDriveService {
     async deleteFile(filePath) {
         const drive = google.drive({version: 'v3', auth : this.googleAuth});
         
-        for (const url of filePath) {
-            const fileId = this.extractFileIdFromUrl(url);
-            await drive.files.delete({fileId});
+        try {
+            for (const url of filePath) {
+                const fileId = this.extractFileIdFromUrl(url);
+                await drive.files.delete({fileId});
+            }
+        }catch (err){
+            console.error('GoogleDrive. 파일 삭제중 에러. ', err);
+        }
+    }
+    
+    async getFileNameFromDrive(url){
+        const fileId = this.extractFileIdFromUrl(url);
+        if (!fileId){
+            return null;
+        }
+        
+        try{
+            const response = await this.drive.files.get({
+                fileId : fileId, 
+                fields: 'name'
+            });
+            
+            return response.data.name;
+        }catch(err){
+            console.error('GoogleDrive. 파일명 가져오는중 에러. ', err)
         }
     }
 
