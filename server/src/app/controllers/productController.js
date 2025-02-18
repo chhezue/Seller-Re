@@ -34,15 +34,9 @@ class ProductController {
         console.log('postProduct ');
 
         try {
-            const { productName, tradeType, price, description, category, isTemporary } = req.body;
+            const { productName, tradeType, price, description, category, isTemporary, region } = req.body;
+            const uploadTime = +new Date();
             const userId = req.user.id;
-            console.log('postProducts productName : ', productName);
-            console.log('postProducts price : ', price);
-            console.log('postProducts tradeType : ', tradeType);
-            console.log('postProducts description : ', description);
-            console.log('postProducts category : ', category);
-            console.log('postProducts isTemporary : ', isTemporary);
-            console.log('userId : ', userId);
 
             if (!req.files || req.files.length < 1) {
                 return res.status(400).json({ error: '업로드 할 이미지가 없습니다.' });
@@ -51,8 +45,8 @@ class ProductController {
             // 파일 업로드
             const uploadPromises = req.files.map(async (file) => {
                 try {
-                    const uploadedUrl = await this.googleDriveService.uploadFile(file.path, file.originalname);
-                    return uploadedUrl;
+                    const uploadFileName = userId + '-' + uploadTime + '-' + file.originalname;
+                    return await this.googleDriveService.uploadFile(file.path, uploadFileName, process.env.GOOGLE_DRIVE_PRODUCTS_IMAGE);
                 } catch (uploadError) {
                     console.error(`파일 업로드 실패: ${file.filename}`, uploadError);
                     throw new Error('파일 업로드 중 오류가 발생했습니다.');
@@ -74,7 +68,7 @@ class ProductController {
                 writeStatus : isTemporary? '등록' : '임시저장',
                 transactionType : (tradeType==='sale'? '판매' : '나눔'),
                 status : '판매중',
-                region : '6794d5502182ffe7b3b86bdc', //
+                region, //
                 fileUrls : imageUrls,
             });
 

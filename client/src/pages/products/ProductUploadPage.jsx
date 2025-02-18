@@ -198,7 +198,7 @@ export default function ProductUploadPage() {
         formData.append("price", tradeType === "sale" ? price : 0);
         formData.append("description", description);
         formData.append("isTemporary", isTemporary); // 임시 저장 여부 추가
-        formData.append("regionId", selectedRegion._id);
+        formData.append("region", selectedRegion._id);
 
         imageFiles.forEach((file) => formData.append("images", file));
 

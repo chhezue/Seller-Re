@@ -26,14 +26,15 @@ class GoogleDriveService {
         }
     }
 
-    async uploadFile(filePath, fileName) {
+    
+    async uploadFile(filePath, fileName, googleDrivefolderPath) {
         try {
             // 인증 확인
             await this.authenticate();
 
             const fileMetadata = {
                 name: fileName,
-                parents: ['18nkgajwbBNJNobmKqViuzpmCSIrqsko5'],    // Google Drive 폴더 ID
+                parents: [googleDrivefolderPath],    // Google Drive 폴더 ID
             };
 
             const media = {
