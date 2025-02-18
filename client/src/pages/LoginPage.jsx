@@ -4,9 +4,7 @@ export default function LoginPage() {
     const [userId, setUserId] = useState("");
     const [userPassword, setUserPassword] = useState("");
 
-    const handleLogin = async () => {
-        console.log("로그인 버튼 클릭됨!");
-
+    const loginRequest = async (userId, userPassword) => {
         try {
             const response = await fetch("http://localhost:9000/api/users/login", {
                 method: "POST",
@@ -32,11 +30,15 @@ export default function LoginPage() {
         }
     };
 
+    // 일반 로그인
+    const handleLogin = async () => {
+        await loginRequest(userId, userPassword);
+    };
+
     // 자동 로그인
     const handleAutoLogin = async () => {
         try {
-            // MongoDB에서 랜덤 유저 가져오기
-            const userResponse = await fetch("http://localhost:9000/api/users/randomUser")
+            const userResponse = await fetch("http://localhost:9000/api/users/randomUser");
             const userData = await userResponse.json();
 
             if (!userData) {
@@ -45,30 +47,13 @@ export default function LoginPage() {
             }
             console.log("가져온 랜덤 유저 정보:", userData);
 
-            // 해당 유저로 로그인 요청 보내기
-            const loginResponse = await fetch("http://localhost:9000/api/users/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId: userData.userId, userPassword: userData.userPassword }),
-                credentials: "include",
-            });
-
-            console.log("자동 로그인 응답 상태:", loginResponse.status);
-            const loginData = await loginResponse.json();
-            console.log("자동 로그인 응답 데이터:", loginData);
-
-            if (loginData.accessToken) {
-                localStorage.setItem("accessToken", loginData.accessToken);
-                localStorage.setItem("user", JSON.stringify(loginData.user)); // localStorage는 string으로 저장
-                window.location.href = "/";
-            } else {
-                alert("자동 로그인 실패");
-            }
+            // 랜덤 유저로 로그인 요청 보내기
+            await loginRequest(userData.userId, userData.userPassword);
         } catch (err) {
             console.error("자동 로그인 오류:", err);
             alert("자동 로그인 오류");
         }
-    }
+    };
 
     return (
         <div className="flex justify-center items-center min-h-screen bg-gray-100">
