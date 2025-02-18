@@ -30,6 +30,7 @@ class UserController {
         try {
             const {userId, userPassword} = req.body;
             const user = await this.userService.authenticateUser(userId, userPassword);
+            console.log("user!!!",user)
             if (!user) {
                 return res.status(401).json({message: '아이디 또는 비밀번호가 올바르지 않습니다.'});
             }
@@ -46,13 +47,13 @@ class UserController {
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7d
             });
 
-            // 로그인된 사용자 정보 반환
             const userData = {
                 userId: user.userid,
                 username: user.username,
                 profileImage: user.profileImage,
-                region: user.region,
-            }
+                region: user.region?.level2,
+            };
+            console.log("userData:", userData);
             res.status(200).json({user: userData, accessToken});
         } catch (err) {
             console.log(err.message);
@@ -105,10 +106,8 @@ class UserController {
     // 로그인 시 랜덤 유저 가져오기
     async getRandomUser(req, res) {
         try {
-            console.log("getRandomUser 함수 시작");
             // 전체 유저 수 가져오기
             const userCount = await User.countDocuments();
-            console.log("userCount: ",userCount)
             if (userCount === 0) {
                 return res.status(404).json({ message: "사용자 없음" });
             }

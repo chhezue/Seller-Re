@@ -22,7 +22,8 @@ class UserService {
 
     async authenticateUser(userId, userPassword) {
         // const user = await User.findOne({userid : userId});
-        const user = await User.findOne({userid: userId, password: userPassword});
+        const user = await User.findOne({userid: userId, password: userPassword}).populate("region", "level2");
+        console.log("🔍 인증된 사용자 정보:", user);
         if (!user) {
             return null;
         }
