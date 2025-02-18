@@ -19,16 +19,16 @@ class ProductController {
     }
 
     // 지역 가져오기
-    // async getRegions(req, res) {
-    //     console.log('getRegions');
-    //     try {
-    //         const regions = await this.productService.fetchAllRegions();
-    //         // console.log('region : ', regions);
-    //         res.status(200).json(regions);
-    //     } catch (err) {
-    //         res.status(500).json({error: err.message});
-    //     }
-    // }
+    async getRegions(req, res) {
+        console.log('getRegions');
+        try {
+            const regions = await this.productService.fetchAllRegions();
+            // console.log('region : ', regions);
+            res.status(200).json(regions);
+        } catch (err) {
+            res.status(500).json({error: err.message});
+        }
+    }
 
     async postProduct(req, res, next) {
         console.log('postProduct ');

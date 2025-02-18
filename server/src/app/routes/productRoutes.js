@@ -29,6 +29,9 @@ class ProductRoutes {
 
         //카테고리 정보 받아오기
         this.router.get('/categories', this.productController.getCategories.bind(this.productController));
+        
+        //지역 정보 받아오기
+        this.router.get('/regions', this.productController.getRegions.bind(this.productController));
 
         // 상품 상세 정보 조회
         // GET /api/products/:id

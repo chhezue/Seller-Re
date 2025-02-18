@@ -14,7 +14,10 @@ export default function ProductUploadPage() {
     const fileInputRef = useRef(null);
     const navigate = useNavigate(); // 뒤로가기 위한 navigate 사용
     const [hasConfirmedTempProduct, setHasConfirmedTempProduct] = useState(false); // 확인 여부 상태
-
+    const [regions, setRegions] = useState([]);
+    const [selectedLevel1, setSelectedLevel1] = useState("");
+    const [filteredLevel2, setFilteredLevel2] = useState([]);
+    
     // 카테고리 데이터를 API에서 불러오는 useEffect
     useEffect(() => {
         fetch("http://localhost:9000/api/products/categories", { method: "GET" })
@@ -25,6 +28,36 @@ export default function ProductUploadPage() {
                 setCategories([]);
             });
     }, []); // 빈 배열을 의존성으로 넣어 한 번만 호출되도록
+
+
+    useEffect(() => {
+        fetch("http://localhost:9000/api/products/regions", { method: "GET" })
+            .then((response) => response.json())
+            .then((data) => {
+                if (Array.isArray(data)) {
+                    const formattedData = data.map(region => ({
+                        _id: region._id?.$oid || region._id,
+                        level1: region.level1,
+                        level2: region.level2
+                    }));
+                    setRegions(formattedData);
+                } else {
+                    setRegions([]);
+                }
+            })
+            .catch((error) => {
+                console.error("지역 데이터 불러오기 실패:", error);
+                setRegions([]);
+            });
+    }, []);
+
+    useEffect(() => {
+        if (selectedLevel1) {
+            setFilteredLevel2(regions.filter(region => region.level1 === selectedLevel1));
+        } else {
+            setFilteredLevel2([]);
+        }
+    }, [selectedLevel1, regions]);
 
     useEffect(() => {
         const token = localStorage.getItem("accessToken");
@@ -239,6 +272,30 @@ export default function ProductUploadPage() {
                       onChange={(e) => setDescription(e.target.value)}
                       className="w-full p-4 border rounded-lg h-36 focus:ring-2 focus:ring-blue-500"></textarea>
 
+            {/* 지역 선택 */}
+            <div>
+                <h2>지역 선택</h2>
+                <label>시/도 선택: </label>
+                <select onChange={(e) => setSelectedLevel1(e.target.value)} value={selectedLevel1}>
+                    <option value="">선택하세요</option>
+                    {[...new Set(regions.map(region => region.level1))].map(level1 => (
+                        <option key={level1} value={level1}>{level1}</option>
+                    ))}
+                </select>
+
+                {selectedLevel1 && (
+                    <div>
+                        <label>구/군 선택: </label>
+                        <select>
+                            <option value="">선택하세요</option>
+                            {filteredLevel2.map(region => (
+                                <option key={region._id} value={region.level2}>{region.level2}</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+            </div>
+
             {/* 사진 업로드 */}
             <label className="block text-gray-700 font-medium mb-2">사진 업로드</label>
             <div className={`w-full h-56 border-2 border-dashed rounded-lg flex flex-wrap items-center justify-center ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"}`}
@@ -267,9 +324,10 @@ export default function ProductUploadPage() {
 
             {/* test */}
             <div>
+                {/* 403 forbidden */}
                 <img src={'https://drive.google.com/uc?id=1-vKmLYKJyNs3D7FqDCRfD2PFUkb6aS0n'} alt="Google Drive Image"/>
                 <img src={'https://drive.google.com/uc?export=view&id=1-vKmLYKJyNs3D7FqDCRfD2PFUkb6aS0n'} alt="Google Drive Image"/>
-                <img src={'https://lh3.google.com/u/0/d/119a88yF-U0E74S63cMtzKaPGPDhtKrm4=w1610-h992-iv1'} alt="Google Drive Image"/>
+                {/* 302 Found */}
                 <img src={'https://lh3.google.com/u/0/d/119a88yF-U0E74S63cMtzKaPGPDhtKrm4=w1610-h992-iv1'} alt="Google Drive Image"/>
                 <img src={'https://lh3.googleusercontent.com/d/1jnnrhKtAWPAF1ceRmGGHzgtS0OajdSJ0'} alt="Google Drive Image" />
 
