@@ -53,7 +53,7 @@ class UserController {
                 profileImage: user.profileImage,
                 region: user.region,
             }
-            res.status(200).json({user: userData, accessToken});  //TODO. user 전부 반환이 아니라 userid, username, role, profileImage만 리턴시켜주기
+            res.status(200).json({user: userData, accessToken});
         } catch (err) {
             console.log(err.message);
             console.log(err)

@@ -43,7 +43,14 @@ export default function Header() {
                 credentials: 'include',
             });
 
-            if (!response.ok) throw new Error("Failed to refresh access token");
+            if (!response.ok) {
+                console.warn(`토큰 갱신 실패: ${response.status}`); // 경고 로그 추가
+                if (response.status === 401) {
+                    console.error("인증 오류: 로그아웃 처리");
+                    handleLogout(); // 401이면 로그아웃
+                }
+                return; // 500 오류 등에서는 강제 로그아웃 안 함
+            }
 
             const data = await response.json();
             if (data.accessToken) {
