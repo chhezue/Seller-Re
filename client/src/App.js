@@ -10,12 +10,14 @@ export default function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("accessToken"));
 
     useEffect(() => {
-        const handleStorageChange = () => {
-            setIsLoggedIn(!!localStorage.getItem("accessToken"));
+        const checkLoginStatus = () => {
+            const accessToken = localStorage.getItem("accessToken");
+            setIsLoggedIn(!!accessToken);
         };
+        checkLoginStatus();
 
-        window.addEventListener("storage", handleStorageChange);
-        return () => window.removeEventListener("storage", handleStorageChange);
+        window.addEventListener("storage", checkLoginStatus);
+        return () => window.removeEventListener("storage", checkLoginStatus);
     }, []);
 
     return (
@@ -23,7 +25,7 @@ export default function App() {
             <Header isLoggedIn={isLoggedIn} />
             <Routes>
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/home" element={isLoggedIn ? <HomePage /> : <LoginPage />} />
+                <Route path="/" element={<HomePage />} />
                 <Route path="/my-page" element={isLoggedIn ? <MyPage /> : <LoginPage />} />
                 <Route path="/product/upload" element={isLoggedIn ? <ProductUploadPage /> : <LoginPage />} />
             </Routes>
