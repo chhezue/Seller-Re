@@ -78,7 +78,12 @@ export default function ProductUploadPage() {
                 }
                 if (data && !hasConfirmedTempProduct) {
                     // Alert를 한번만 띄우도록
-                    const userConfirmed = window.confirm("임시 저장된 글이 있습니다. 이어서 작성하시겠습니까?");
+                    let userConfirmed = window.confirm("임시 저장된 글이 있습니다. 이어서 작성하시겠습니까?");
+                    
+                    if (!userConfirmed){
+                        userConfirmed = window.confirm("임시 저장된 글이 삭제됩니다.");
+                        userConfirmed = !userConfirmed;
+                    }
 
                     if (userConfirmed) {
                         setProductName(data.name);
@@ -95,6 +100,11 @@ export default function ProductUploadPage() {
                             console.log("Updated imagePreviews:", convertedUrls);
                         }
                     } else {
+                        console.log('임시저장글 삭제.');
+                        console.log('data : ', data.fileUrls);
+                        console.log('data : ', data.fileNames);
+                        
+                        
                         fetch("http://localhost:9000/api/products/temp", {
                             method: "DELETE",
                             headers: {

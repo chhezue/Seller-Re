@@ -73,7 +73,7 @@ class ProductController {
                 status : '판매중',
                 region, //
                 fileUrls : imageUrls,
-                fileName : uploadFiles
+                fileNames : uploadFiles
             });
 
             return res.status(201).json({ message: '상품 등록 성공', product: newProduct });
@@ -118,8 +118,17 @@ class ProductController {
         }
     }
     
+    //임시 저장글 삭제
     async deleteTempPostProduct(req, res){
-        
+        try{
+            const userId = req.user.id;
+            const { fileUrls, fileNames } = req.body;
+            console.log('deleteTempPostProduct ', userId, ' ', fileNames, ' ', fileUrls);
+            await this.productService.deleteTempPostProductByUserId(userId);
+            return res.status(204);
+        }catch(err){
+            
+        }
     }
 
     // 상품 상세 가져오기

@@ -80,6 +80,7 @@ class ProductService {
     async getTempPostProductByUserId(userId) {
         try {
             const product = await Product.findOne({
+            // const product = await Product.find({
                 seller: (userId),
                 writeStatus: "임시저장",
                 $or: [
@@ -87,7 +88,9 @@ class ProductService {
                     {DEL_YN: "N"} // DEL_YN이 "N"인 경우
                 ]
             }).sort({createdAt: -1});
+            console.log('product', product);
             if (!product){
+                console.log('product2', product);
                 return null;
             }
             
@@ -105,6 +108,7 @@ class ProductService {
                 region: region ? region.name : null,  // region.name으로 변환
                 price: product.price,
                 fileUrls: product.fileUrls,
+                fileNames: product.fileNames,
                 createdAt: product.createdAt,
             };
             
@@ -115,7 +119,14 @@ class ProductService {
     }
 
 
-    async deleteTempPostProductByUserId(userId) {}
+    async deleteTempPostProductByUserId(userId) {
+        try{
+            
+        }catch (err){
+            console.error('deleteTempPostProductByUserId', err);
+            throw err;
+        }
+    }
 
 
     // 상품 상세 조회
