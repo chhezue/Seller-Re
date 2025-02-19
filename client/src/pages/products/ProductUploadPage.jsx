@@ -100,11 +100,6 @@ export default function ProductUploadPage() {
                             console.log("Updated imagePreviews:", convertedUrls);
                         }
                     } else {
-                        console.log('임시저장글 삭제.');
-                        console.log('data : ', data.fileUrls);
-                        console.log('data : ', data.fileNames);
-                        
-                        
                         fetch("http://localhost:9000/api/products/temp", {
                             method: "DELETE",
                             headers: {

@@ -1,6 +1,6 @@
 const path = require("path");
 const fs = require("fs");
-const { google } = require("googleapis");
+const {google} = require("googleapis");
 
 class GoogleDriveService {
     constructor() {
@@ -12,7 +12,7 @@ class GoogleDriveService {
             scopes: this.SCOPES,
         });
 
-        this.drive = google.drive({ version: 'v3', auth: this.googleAuth });
+        this.drive = google.drive({version: 'v3', auth: this.googleAuth});
     }
 
     async authenticate() {
@@ -26,7 +26,7 @@ class GoogleDriveService {
         }
     }
 
-    
+
     async uploadFile(filePath, fileName, googleDrivefolderPath) {
         try {
             // 인증 확인
@@ -64,34 +64,36 @@ class GoogleDriveService {
             throw new Error('Google Drive Service upload Error');
         }
     }
-    
-    async deleteFile(filePath) {
-        const drive = google.drive({version: 'v3', auth : this.googleAuth});
-        
+
+    async deleteFile(filePaths) {
+        const drive = google.drive({version: 'v3', auth: this.googleAuth});
+
         try {
-            for (const url of filePath) {
+            for (const url of filePaths) {
                 const fileId = this.extractFileIdFromUrl(url);
-                await drive.files.delete({fileId});
+                if (fileId) {
+                    await drive.files.delete({fileId});
+                }
             }
-        }catch (err){
+        } catch (err) {
             console.error('GoogleDrive. 파일 삭제중 에러. ', err);
         }
     }
-    
-    async getFileNameFromDrive(url){
+
+    async getFileNameFromDrive(url) {
         const fileId = this.extractFileIdFromUrl(url);
-        if (!fileId){
+        if (!fileId) {
             return null;
         }
-        
-        try{
+
+        try {
             const response = await this.drive.files.get({
-                fileId : fileId, 
+                fileId: fileId,
                 fields: 'name'
             });
-            
+
             return response.data.name;
-        }catch(err){
+        } catch (err) {
             console.error('GoogleDrive. 파일명 가져오는중 에러. ', err)
         }
     }
@@ -103,4 +105,4 @@ class GoogleDriveService {
     }
 }
 
-module.exports = { GoogleDriveService };
+module.exports = {GoogleDriveService};

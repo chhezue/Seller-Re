@@ -80,7 +80,7 @@ class ProductService {
     async getTempPostProductByUserId(userId) {
         try {
             const product = await Product.findOne({
-            // const product = await Product.find({
+                // const product = await Product.find({
                 seller: (userId),
                 writeStatus: "임시저장",
                 $or: [
@@ -88,12 +88,11 @@ class ProductService {
                     {DEL_YN: "N"} // DEL_YN이 "N"인 경우
                 ]
             }).sort({createdAt: -1});
-            console.log('product', product);
-            if (!product){
-                console.log('product2', product);
+
+            if (!product) {
                 return null;
             }
-            
+
             const category = await Category.findById(product.category).exec();
             const region = await Region.findById(product.region).exec();
 
@@ -111,7 +110,7 @@ class ProductService {
                 fileNames: product.fileNames,
                 createdAt: product.createdAt,
             };
-            
+
         } catch (err) {
             console.error('쿼리 실행 중 오류 발생:', err); // 에러 발생 시 처리
             throw err; // 에러를 다시 던져서 호출한 곳에서 처리
@@ -119,10 +118,26 @@ class ProductService {
     }
 
 
-    async deleteTempPostProductByUserId(userId) {
-        try{
-            
-        }catch (err){
+    async deleteTempPostProduct(userId, postId) {
+        try {
+            // //1. 완전삭제
+            // const resultHardDelete = await Product.deleteOne({
+            //     seller: userId,
+            //     _id: postId,
+            // });
+            // // deldteCount === 0 : false. 삭제할 데이터가 없음
+            // return (resultHardDelete.deletedCount !== 0);
+
+            //2. 삭제 플래그 변경
+            const resultSoftDelete = await Product.updateOne({
+                seller: userId,
+                _id: postId,
+            }, {
+                $set: {DEL_YN: "Y"}
+            });
+            // matchedCount === 0 : false. 수정할 데이터가 없음
+            return (resultSoftDelete.matchedCount !== 0);
+        } catch (err) {
             console.error('deleteTempPostProductByUserId', err);
             throw err;
         }
@@ -137,16 +152,16 @@ class ProductService {
             const detailedProduct = new DetailedProduct();
 
             // product 데이터 조회
-            const product = await Product.findOne({ _id: id });
+            const product = await Product.findOne({_id: id});
             detailedProduct.product = product;
 
             // productFile 데이터 조회
-            const productFiles = await ProductFile.find({ product: id });
+            const productFiles = await ProductFile.find({product: id});
             detailedProduct.productFile = productFiles;
 
             // favorite 개수 조회
             // countDocuments: 문서의 개수 조회
-            const favoriteCount = await Favorite.countDocuments({ productId: id });
+            const favoriteCount = await Favorite.countDocuments({productId: id});
             detailedProduct.favoriteCount = favoriteCount;
 
             // user (작성자) 정보 조회

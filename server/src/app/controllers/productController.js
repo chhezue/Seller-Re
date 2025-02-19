@@ -34,14 +34,14 @@ class ProductController {
         console.log('postProduct ');
 
         try {
-            const { productName, tradeType, price, description, category, isTemporary, region } = req.body;
+            const {productName, tradeType, price, description, category, isTemporary, region} = req.body;
             const uploadTime = +new Date();
             const userId = req.user.id;
             //파일명을 함께 저장. API를 이용하여 링크로 파일명을 검색하는것보다 DB에 저장.
-            const uploadFiles=[];
+            const uploadFiles = [];
 
             if (!req.files || req.files.length < 1) {
-                return res.status(400).json({ error: '업로드 할 이미지가 없습니다.' });
+                return res.status(400).json({error: '업로드 할 이미지가 없습니다.'});
             }
 
             // 파일 업로드
@@ -68,15 +68,15 @@ class ProductController {
                 description,
                 category,
                 seller: userId,
-                writeStatus : isTemporary? '등록' : '임시저장',
-                transactionType : (tradeType==='sale'? '판매' : '나눔'),
-                status : '판매중',
+                writeStatus: isTemporary ? '등록' : '임시저장',
+                transactionType: (tradeType === 'sale' ? '판매' : '나눔'),
+                status: '판매중',
                 region, //
-                fileUrls : imageUrls,
-                fileNames : uploadFiles
+                fileUrls: imageUrls,
+                fileNames: uploadFiles
             });
 
-            return res.status(201).json({ message: '상품 등록 성공', product: newProduct });
+            return res.status(201).json({message: '상품 등록 성공', product: newProduct});
 
         } catch (err) {
             next(err); // 글로벌 에러 핸들러로 전달
@@ -90,44 +90,51 @@ class ProductController {
         // 필터 조건: 지역, 카테고리
         // 유저는 필터 조건을 보내지 않을 수도 있으므로(전체 조회) req.params가 아닌 req.query 사용
         // 요청 URL: seller_re_backend/posts?level1=경기도&level2=인천&category=도서
-        const { level1, level2, category } = req.query;
+        const {level1, level2, category} = req.query;
         console.log('level1: ', level1, '\tlevel2: ', level2, '\tcategory: ', category);
 
         try {
             const products = await this.productService.getProducts(level1, level2, category);
-            return res.status(201).json({ message: '상품 목록 조회 성공', products: products });
+            return res.status(201).json({message: '상품 목록 조회 성공', products: products});
         } catch (err) {
             next(err); // 글로벌 에러 핸들러로 전달
         }
     }
-    
-    async getTempPostProduct(req, res){
-        try{
+
+    async getTempPostProduct(req, res) {
+        try {
             const userId = req.user.id;
             console.log('getTempPostProduct ');
             console.log('userId : ', userId);
             const tempPost = await this.productService.getTempPostProductByUserId(userId);
             console.log('getTempPost', tempPost);
-            
+
             if (tempPost === null) {
                 return res.status(404).json({message: '임시 작성된 글이 없습니다.'});
             }
             return res.status(200).json(tempPost);
-        }catch(err){
-            
+        } catch (err) {
+
         }
     }
-    
+
     //임시 저장글 삭제
-    async deleteTempPostProduct(req, res){
-        try{
+    async deleteTempPostProduct(req, res) {
+        try {
             const userId = req.user.id;
-            const { fileUrls, fileNames } = req.body;
-            console.log('deleteTempPostProduct ', userId, ' ', fileNames, ' ', fileUrls);
-            await this.productService.deleteTempPostProductByUserId(userId);
-            return res.status(204);
-        }catch(err){
-            
+            const tempPostProduct = this.productService.getTempPostProductByUserId(userId);
+            if (!tempPostProduct) {
+                return res.status(404).json({message: "임시 저장된 글이 없음"})
+            }
+
+            if (tempPostProduct.fileUrls && tempPostProduct.fileUrls.length > 0) {
+                await this.googleDriveService.deleteFile(tempPostProduct.fileUrls[0]);
+            }
+
+            return await this.productService.deleteTempPostProduct(userId, tempPostProduct._id) ?
+                res.status(204) : res.status(404).json({message: "삭제할 데이터 없음"});
+        } catch (err) {
+
         }
     }
 
@@ -137,7 +144,7 @@ class ProductController {
 
         try {
             const detailedProduct = await this.productService.getDetailedProduct(req.params.id);
-            return res.status(200).json({ message: '상품 상세 조회 성공', detailedProduct: detailedProduct });
+            return res.status(200).json({message: '상품 상세 조회 성공', detailedProduct: detailedProduct});
         } catch (err) {
             next(err); // 글로벌 에러 핸들러로 전달
         }
