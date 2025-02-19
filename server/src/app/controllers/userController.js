@@ -1,5 +1,4 @@
 const {UserService} = require('../services/userService');
-const User = require("../models/User");
 
 class UserController {
     constructor() {
@@ -48,10 +47,11 @@ class UserController {
             });
 
             const userData = {
+                id: user._id,
                 userId: user.userid,
                 username: user.username,
                 profileImage: user.profileImage,
-                region: user.region?.level2,
+                region: user.region.level2,
             };
             console.log("userData:", userData);
             res.status(200).json({user: userData, accessToken});
@@ -106,26 +106,13 @@ class UserController {
     // 로그인 시 랜덤 유저 가져오기
     async getRandomUser(req, res) {
         try {
-            // 전체 유저 수 가져오기
-            const userCount = await User.countDocuments();
-            if (userCount === 0) {
-                return res.status(404).json({ message: "사용자 없음" });
-            }
-            // 랜덤 인덱스 생성
-            const randomIndex = Math.floor(Math.random() * userCount);
-            // 해당 인덱스에서 유저 한 명 가져오기
-            const randomUser = await User.findOne().skip(randomIndex);
-            if (!randomUser) {
-                return res.status(404).json({ message: "사용자를 찾을 수 없음" });
-            }
-            console.log("랜덤 사용자:", randomUser);
-            res.json({ userId: randomUser.userid, userPassword: randomUser.password });
+            const randomUser = await this.userService.fetchRandomUser();
+            console.log("controller randomUser: ", randomUser)
+            res.status(200).json(randomUser);
         } catch (error) {
-            console.error("랜덤 조회 오류:", error);
-            res.status(500).json({ message: "서버 오류", error: error.message });
+            res.status(500).json({ message: error.message });
         }
     }
-
 }
 
 module.exports = {UserController};
