@@ -68,9 +68,9 @@ class ProductController {
                 description,
                 category,
                 seller: userId,
-                writeStatus: isTemporary ? '등록' : '임시저장',
+                writeStatus: isTemporary ? '임시저장' : '등록'  ,
                 transactionType: (tradeType === 'sale' ? '판매' : '나눔'),
-                status: '판매중',
+                status: isTemporary? '임시저장' : '판매중',
                 region, //
                 fileUrls: imageUrls,
                 fileNames: uploadFiles
@@ -122,19 +122,21 @@ class ProductController {
     async deleteTempPostProduct(req, res) {
         try {
             const userId = req.user.id;
-            const tempPostProduct = this.productService.getTempPostProductByUserId(userId);
+            const tempPostProduct = await this.productService.getTempPostProductByUserId(userId);
             if (!tempPostProduct) {
+                console.log('임시저장된 글이 없음.');
                 return res.status(404).json({message: "임시 저장된 글이 없음"})
             }
+            console.log('임시저장글 삭제. ', tempPostProduct);
 
             if (tempPostProduct.fileUrls && tempPostProduct.fileUrls.length > 0) {
                 await this.googleDriveService.deleteFile(tempPostProduct.fileUrls[0]);
             }
 
-            return await this.productService.deleteTempPostProduct(userId, tempPostProduct._id) ?
+            return await this.productService.deletePostProduct(userId, tempPostProduct._id, "임시저장") ?
                 res.status(204) : res.status(404).json({message: "삭제할 데이터 없음"});
         } catch (err) {
-
+            console.error(err);
         }
     }
 

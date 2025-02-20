@@ -16,7 +16,7 @@ const ProductSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-        enum: ['판매중', '판매완료', '임시저장']
+        enum: ['판매중', '판매완료', '임시저장', '삭제']
     },
     writeStatus: {
         type: String,

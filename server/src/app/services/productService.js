@@ -22,6 +22,7 @@ class ProductService {
     }
 
     async addProduct(product) {
+        console.log('addproduct ', product);
         const newProduct = new Product(product);
         return await newProduct.save();
     }
@@ -83,10 +84,11 @@ class ProductService {
                 // const product = await Product.find({
                 seller: (userId),
                 writeStatus: "임시저장",
-                $or: [
-                    {DEL_YN: {$exists: false}}, // DEL_YN 필드가 존재하지 않는 경우
-                    {DEL_YN: "N"} // DEL_YN이 "N"인 경우
-                ]
+                status : "임시저장",
+                // $or: [
+                //     {DEL_YN: {$exists: false}}, // DEL_YN 필드가 존재하지 않는 경우
+                //     {DEL_YN: "N"} // DEL_YN이 "N"인 경우
+                // ]
             }).sort({createdAt: -1});
 
             if (!product) {
@@ -118,7 +120,7 @@ class ProductService {
     }
 
 
-    async deleteTempPostProduct(userId, postId) {
+    async deletePostProduct(userId, postId, originalStatus) {
         try {
             // //1. 완전삭제
             // const resultHardDelete = await Product.deleteOne({
@@ -128,17 +130,26 @@ class ProductService {
             // // deldteCount === 0 : false. 삭제할 데이터가 없음
             // return (resultHardDelete.deletedCount !== 0);
 
-            //2. 삭제 플래그 변경
+            // //2. 삭제 플래그 변경
+            // const resultSoftDelete = await Product.updateOne({
+            //     seller: userId,
+            //     _id: postId,
+            // }, {
+            //     $set: {DEL_YN: "Y"}
+            // });
+            // // matchedCount === 0 : false. 수정할 데이터가 없음
+            
+            // 2. 삭제 플래그 방법 변경
             const resultSoftDelete = await Product.updateOne({
-                seller: userId,
-                _id: postId,
+                seller : userId, 
+                _id : postId,
+                status : originalStatus
             }, {
-                $set: {DEL_YN: "Y"}
-            });
-            // matchedCount === 0 : false. 수정할 데이터가 없음
+                $set: {status : "삭제"}
+            })
             return (resultSoftDelete.matchedCount !== 0);
         } catch (err) {
-            console.error('deleteTempPostProductByUserId', err);
+            console.error('deletePostProduct', err);
             throw err;
         }
     }
