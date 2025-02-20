@@ -1,9 +1,7 @@
 const Category = require('../models/Category');
 const Product = require("../models/Product");
 const Region = require("../models/Region");
-const DetailedProduct = require("../models/DetailedProduct");
 const Favorite = require("../models/Favorite");
-const ProductFile = require("../models/ProductFile");
 const User = require("../models/User");
 
 class ProductService {
@@ -118,34 +116,43 @@ class ProductService {
     async deleteTempPostProductByUserId(userId) {}
 
 
-    // 상품 상세 조회
-    async getDetailedProduct(id) {
+    // 상품 상세 조회(상품 아이디로 연결)
+    // 수정 필요: 거래 희망 장소, 파일 이미지 업로드
+    async getDetailedProduct(productId) {
+        console.log('getDetailedProduct 호출됨, productId:', productId);
+
         try {
-            // 불러와야 하는 것들: 이미지, 카테고리, 수정일, 찜 개수, 상품명, 상품 소개, 거래 희망 장소, 작성자
-            // 불러와서 DetailedProduct 객체에 넣음.
-            const detailedProduct = new DetailedProduct();
-
             // product 데이터 조회
-            const product = await Product.findOne({ _id: id });
-            detailedProduct.product = product;
+            const product = await Product.findOne({ _id: productId });
+            if (!product) {
+                throw new Error('상품을 찾을 수 없습니다.');
+            }
 
-            // productFile 데이터 조회
-            const productFiles = await ProductFile.find({ product: id });
-            detailedProduct.productFile = productFiles;
-
-            // favorite 개수 조회
-            // countDocuments: 문서의 개수 조회
-            const favoriteCount = await Favorite.countDocuments({ productId: id });
-            detailedProduct.favoriteCount = favoriteCount;
-
-            // user (작성자) 정보 조회
+            const category = await Category.findById(product.category);
+            // const region = await Region.findById(product.region);
+            const favoriteCount = await Favorite.countDocuments({ productId: productId });
             const seller = await User.findById(product.seller);
-            detailedProduct.seller = seller;
 
-            // 거래 희망 장소 조회 어떻게..
-            // detailedProduct.location = product.location;
-
-            return detailedProduct;
+            // 필요한 정보만 객체로 구성하여 반환
+            return {
+                _id: product._id, // 상품 id
+                name: product.name, // 상품 이름
+                category: category ? category.name : null, // category.name으로 반환
+                transactionType: product.transactionType, // 거래 유형(판매, 나눔)
+                description: product.description, // 상품 설명
+                status: product.status, // 상품 상태(판매중, 판매완료, 임시저장)
+                writeStatus: product.writeStatus,
+                region: region ? region.name : null, // region.name으로 변환
+                price: product.price,
+                fileUrls: productFiles.map(file => file.fileUrl),
+                createdAt: product.createdAt,
+                favoriteCount: favoriteCount,
+                seller: {
+                    _id: seller._id,
+                    username: seller.username,
+                    profileImage: seller.profileImage
+                }
+            };
         } catch (error) {
             console.error("상품 상세 출력 중 오류 발생:", error);
             throw error;
