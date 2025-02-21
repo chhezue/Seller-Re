@@ -65,7 +65,7 @@ class GoogleDriveService {
         }
     }
 
-    async deleteFile(filePaths) {
+    async deleteFile(filePaths, folder_id) {
         const drive = google.drive({version: 'v3', auth: this.googleAuth});
 
         try {

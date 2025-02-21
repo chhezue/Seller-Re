@@ -130,7 +130,7 @@ class ProductController {
             console.log('임시저장글 삭제. ', tempPostProduct);
 
             if (tempPostProduct.fileUrls && tempPostProduct.fileUrls.length > 0) {
-                await this.googleDriveService.deleteFile(tempPostProduct.fileUrls[0]);
+                await this.googleDriveService.deleteFile(tempPostProduct.fileUrls[0], process.env.GOOGLE_DRIVE_PRODUCTS_IMAGE);
             }
 
             return await this.productService.deletePostProduct(userId, tempPostProduct._id, "임시저장") ?
