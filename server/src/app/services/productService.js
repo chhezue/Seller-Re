@@ -25,7 +25,7 @@ class ProductService {
     }
 
     // 모든 상품 목록 조회
-    async getProducts(level1, level2, category) {
+    async getProducts(level1, level2, category, transactionType, skip, limit) {
         try {
             let filter = {}; // 동적 필터 객체
 
@@ -37,9 +37,9 @@ class ProductService {
 
                 const region = await Region.findOne(regionFilter);
                 if (region) {
-                    filter.region = region._id; // 찾은 region_id 추가
+                    filter.region = region._id;
                 } else {
-                    return []; // 지역이 없으면 빈 배열 반환
+                    return [];
                 }
             }
 
@@ -47,17 +47,22 @@ class ProductService {
             if (category) {
                 const categoryData = await Category.findOne({name: category});
                 if (categoryData) {
-                    filter.category = categoryData._id; // 찾은 category_id 추가
+                    filter.category = categoryData._id;
                 } else {
-                    return []; // 카테고리가 없으면 빈 배열 반환
+                    return [];
                 }
             }
 
-            // 3. status가 '임시저장'인 것은 제외
-            filter.status = '판매중' || '판매완료';
+            // 3. transactionType(나눔, 판매) 필터 추가
+            if (transactionType) {
+                filter.transactionType = transactionType;
+            }
 
-            // 4. 필터를 이용해 product 리스트 조회
-            const products = await Product.find(filter);
+            // 4. status가 '임시저장'인 것은 제외
+            filter.status = '판매중';
+
+            // 5. 필터를 이용해 product 리스트 조회
+            const products = await Product.find(filter).skip(skip).limit(limit);
             return products;
         } catch (error) {
             console.error("상품 조회 중 오류 발생:", error);
