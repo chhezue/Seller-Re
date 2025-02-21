@@ -1,10 +1,26 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Header() {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem("accessToken"));
     const [username, setUsername] = useState("");
+    const [profileImage, setProfileImage] = useState("/profileImg-default.png");
     const navigate = useNavigate();
+
+    const checkLoginStatus = useCallback(() => { // useCallback을 사용하면 함수를 기억하여 불필요한 재생성을 방지
+        const accessToken = localStorage.getItem("accessToken");
+        const storedUser = localStorage.getItem("user");
+        // console.log("accessToken: ", accessToken, "storedUser: ", storedUser);
+
+        if (accessToken && storedUser) {
+            const user = JSON.parse(storedUser);
+            setIsLoggedIn(true);
+            setUsername(user?.username || "사용자");
+            setProfileImage(user?.profileImage || "/profileImg-default.png");
+        } else {
+            setIsLoggedIn(false);
+        }
+    }, []);
 
     useEffect(() => {
         checkLoginStatus();
@@ -15,17 +31,7 @@ export default function Header() {
             }
         }, 55 * 1000);
         return () => clearInterval(interval);
-    }, []);
-
-    const checkLoginStatus = () => {
-        const accessToken = localStorage.getItem("accessToken");
-        const storedUsername = localStorage.getItem("username");
-
-        if (accessToken) {
-            setIsLoggedIn(true);
-            setUsername(storedUsername || "사용자");
-        }
-    };
+    }, [checkLoginStatus]);
 
     const refreshAccessToken = async () => {
         const accessToken = localStorage.getItem("accessToken");
@@ -37,7 +43,14 @@ export default function Header() {
                 credentials: 'include',
             });
 
-            if (!response.ok) throw new Error("Failed to refresh access token");
+            if (!response.ok) {
+                console.warn(`토큰 갱신 실패: ${response.status}`); // 경고 로그 추가
+                if (response.status === 401) {
+                    console.error("인증 오류: 로그아웃 처리");
+                    handleLogout(); // 401이면 로그아웃
+                }
+                return; // 500 오류 등에서는 강제 로그아웃 안 함
+            }
 
             const data = await response.json();
             if (data.accessToken) {
@@ -52,9 +65,9 @@ export default function Header() {
         }
     };
 
-    const handleLogout = async () => {
+    const handleLogout = () => {
         localStorage.removeItem("accessToken");
-        localStorage.removeItem("username");
+        localStorage.removeItem("user");
         setIsLoggedIn(false);
         navigate("/login");
     };
@@ -70,10 +83,10 @@ export default function Header() {
                 {/* 로그인 상태에 따른 UI 변경 */}
                 {isLoggedIn ? (
                     <div className="flex items-center space-x-4">
-                        <a href="/my-page"><span className="text-gray-700">{username}</span></a>
-                        <button className="px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-600">
-                            편집하기
-                        </button>
+                        <Link to="/my-page" className="flex items-center space-x-2">
+                            <img src={profileImage} alt="프로필이미지" className="w-8 h-8 rounded-full" />
+                            <span className="text-gray-700">{username}</span>
+                        </Link>
                         <button
                             onClick={handleLogout}
                             className="px-3 py-1 border border-gray-500 text-gray-700 rounded hover:bg-gray-100"

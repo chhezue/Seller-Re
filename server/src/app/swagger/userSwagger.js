@@ -69,8 +69,8 @@ const userSwagger = {
                         schema: {
                             type: "object",
                             properties: {
-                                userId: { type: "string", example: "johndoe" },
-                                userPassword: { type: "string", example: "password123" },
+                                userId: { type: "string", example: "user1" },
+                                userPassword: { type: "string", example: "1234" },
                             },
                         },
                     },
@@ -79,9 +79,51 @@ const userSwagger = {
             responses: {
                 200: {
                     description: "로그인 성공",
+                    content: {
+                        "application/json": {
+                            schema: {
+                                type: "object",
+                                    properties: {
+                                    user: {
+                                        type: "object",
+                                        properties: {
+                                            userId: { type: "string", example: "user1" },
+                                            username: { type: "string", example: "user1" },
+                                            profileImage: { type: "string", example: "https://example.com/profile.jpg" },
+                                            region: { type: "string", example: "6794d5502182ffe7b3b86b72"},
+                                        },
+                                    },
+                                    accessToken: { type: "string", example: "eyJhbGciOiJIUzI1NiIsIn..."},
+                                },
+                            },
+                        },
+                    },
                 },
                 401: {
-                    description: "로그인 실패",
+                    description: "로그인 실패 - 잘못된 아이디 또는 비밀번호",
+                    content: {
+                        "application/json": {
+                            schema: {
+                                type: "object",
+                                properties: {
+                                    message: { type: "string", example: "아이디 또는 비밀번호가 올바르지 않습니다." }
+                                },
+                            },
+                        },
+                    },
+                },
+                500: {
+                    description: "서버 오류",
+                    content: {
+                        "application/json": {
+                            schema: {
+                                type: "object",
+                                properties: {
+                                    error: { type: "string", example: "서버 오류" }
+                                },
+                            },
+                        },
+                    },
                 },
             },
         },
@@ -99,6 +141,57 @@ const userSwagger = {
                 },
                 401: {
                     description: "인증 실패",
+                },
+            },
+        },
+    },
+
+    "/api/users/randomUser": {
+        get: {
+            summary: "랜덤 사용자 id, pw 가져오기",
+            description: "자동로그인 시 사용자 정보 랜덤하게 가져오기",
+            tags: ["Users"],
+            responses: {
+                200: {
+                    description: "성공적으로 사용자 정보 반환",
+                    content: {
+                        "application/json": {
+                            schema: {
+                                type: "object",
+                                properties: {
+                                    userId: { type: "string", example: "user1"},
+                                    userPassword: { type: "string", example: "1234"},
+                                },
+                            },
+                        },
+                    },
+                },
+                404: {
+                    description: "사용자를 찾을 수 없음",
+                    content: {
+                        "application/json": {
+                            schema: {
+                                type: "object",
+                                properties: {
+                                    message: { type: "string", example: "사용자를 찾을 수 없음" },
+                                },
+                            },
+                        },
+                    },
+                },
+                500: {
+                    description: "서버 오류",
+                    content: {
+                        "application/json": {
+                            schema: {
+                                type: "object",
+                                properties: {
+                                    message: { type: "string", example: "서버 오류" },
+                                    error: { type: "string", example: "Database connection failed" },
+                                },
+                            },
+                        },
+                    },
                 },
             },
         },
