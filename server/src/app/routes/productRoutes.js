@@ -36,6 +36,7 @@ class ProductRoutes {
         // 상품 상세 정보 조회
         // GET /api/products/:id
         this.router.get('/:id', this.productController.getDetailedProduct.bind(this.productController));
+
     }
 }
 
