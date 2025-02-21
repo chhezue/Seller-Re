@@ -130,13 +130,14 @@ class ProductController {
             console.log('임시저장글 삭제. ', tempPostProduct);
 
             if (tempPostProduct.fileUrls && tempPostProduct.fileUrls.length > 0) {
-                await this.googleDriveService.deleteFile(tempPostProduct.fileUrls[0], process.env.GOOGLE_DRIVE_PRODUCTS_IMAGE);
+                await this.googleDriveService.deleteFile(tempPostProduct.fileUrls, process.env.GOOGLE_DRIVE_PRODUCTS_IMAGE);
             }
 
             return await this.productService.deletePostProduct(userId, tempPostProduct._id, "임시저장") ?
                 res.status(204) : res.status(404).json({message: "삭제할 데이터 없음"});
         } catch (err) {
             console.error(err);
+            return res.status(500).json({error: err.message});
         }
     }
 
