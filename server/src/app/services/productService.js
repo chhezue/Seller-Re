@@ -27,7 +27,7 @@ class ProductService {
     // 모든 상품 목록 조회
     async getProducts(level1, level2, category, transactionType, skip, limit) {
         try {
-            let filter = {}; // 동적 필터 객체
+            let filter = { status: '판매중' };
 
             // 1. level1, level2로 region_id 찾기
             if (level1 || level2) {
@@ -35,9 +35,9 @@ class ProductService {
                 if (level1) regionFilter.level1 = level1;
                 if (level2) regionFilter.level2 = level2;
 
-                const region = await Region.findOne(regionFilter);
-                if (region) {
-                    filter.region = region._id;
+                const regions = await Region.find(regionFilter); // findOne을 find로 변경
+                if (regions && regions.length > 0) {
+                    filter.region = { $in: regions.map(r => r._id) }; // 여러 region_id를 포함하도록 수정
                 } else {
                     return [];
                 }
@@ -45,12 +45,7 @@ class ProductService {
 
             // 2. category로 category_id 찾기
             if (category) {
-                const categoryData = await Category.findOne({name: category});
-                if (categoryData) {
-                    filter.category = categoryData._id;
-                } else {
-                    return [];
-                }
+                filter.category = category;
             }
 
             // 3. transactionType(나눔, 판매) 필터 추가
@@ -58,12 +53,29 @@ class ProductService {
                 filter.transactionType = transactionType;
             }
 
-            // 4. status가 '임시저장'인 것은 제외
-            filter.status = '판매중';
+            const products = await Product.find(filter)
+                .skip(parseInt(skip))
+                .limit(parseInt(limit))
+                .populate('region', 'level1 level2')
+                .populate('category', 'name')
+                .sort({ createdAt: -1 });
 
-            // 5. 필터를 이용해 product 리스트 조회
-            const products = await Product.find(filter).skip(skip).limit(limit);
-            return products;
+            // MongoDB 문서를 JSON으로 변환할 때 날짜를 ISO 문자열로 변환
+            return products.map(product => {
+                const productObj = product.toObject(); // Mongoose 문서를 일반 객체로 변환
+                return {
+                    _id: productObj._id,
+                    name: productObj.name,
+                    price: productObj.price,
+                    fileUrls: productObj.fileUrls,
+                    transactionType: productObj.transactionType,
+                    region: productObj.region ? `${productObj.region.level1} ${productObj.region.level2}` : null,
+                    category: productObj.category?.name,
+                    createdAt: productObj.createdAt?.toISOString(),
+                    updatedAt: productObj.updatedAt?.toISOString(),
+                    favoriteCount: productObj.favoriteCount
+                };
+            });
         } catch (error) {
             console.error("상품 조회 중 오류 발생:", error);
             throw error;
@@ -124,17 +136,19 @@ class ProductService {
     // 상품 상세 조회(상품 아이디로 연결)
     // 수정 필요: 거래 희망 장소, 파일 이미지 업로드
     async getDetailedProduct(productId) {
-        console.log('getDetailedProduct 호출됨, productId:', productId);
+        console.log('[getDetailedProduct], productId:', productId);
 
         try {
             // product 데이터 조회
             const product = await Product.findOne({ _id: productId });
+            console.log('Found product:', product);
+            
             if (!product) {
                 throw new Error('상품을 찾을 수 없습니다.');
             }
 
             const category = await Category.findById(product.category);
-            // const region = await Region.findById(product.region);
+            const region = await Region.findById(product.region); console.log('Found region:', region);
             const favoriteCount = await Favorite.countDocuments({ productId: productId });
             const seller = await User.findById(product.seller);
 
@@ -147,10 +161,11 @@ class ProductService {
                 description: product.description, // 상품 설명
                 status: product.status, // 상품 상태(판매중, 판매완료, 임시저장)
                 writeStatus: product.writeStatus,
-                region: region ? region.name : null, // region.name으로 변환
+                region: region ? `${region.level1} ${region.level2}` : null, // region.name으로 변환
                 price: product.price,
-                fileUrls: productFiles.map(file => file.fileUrl),
+                fileUrls: product.fileUrls,
                 createdAt: product.createdAt,
+                updatedAt: product.updatedAt,
                 favoriteCount: favoriteCount,
                 seller: {
                     _id: seller._id,
