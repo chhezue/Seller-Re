@@ -3,7 +3,6 @@ const Product = require("../models/Product");
 const Region = require("../models/Region");
 const DetailedProduct = require("../models/DetailedProduct");
 const Favorite = require("../models/Favorite");
-const ProductFile = require("../models/ProductFile");
 const User = require("../models/User");
 
 class ProductService {
@@ -165,10 +164,6 @@ class ProductService {
             // product 데이터 조회
             const product = await Product.findOne({_id: id});
             detailedProduct.product = product;
-
-            // productFile 데이터 조회
-            const productFiles = await ProductFile.find({product: id});
-            detailedProduct.productFile = productFiles;
 
             // favorite 개수 조회
             // countDocuments: 문서의 개수 조회
