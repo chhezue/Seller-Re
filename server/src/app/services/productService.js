@@ -188,6 +188,23 @@ class ProductService {
             throw error;
         }
     }
+
+
+    // 판매 상품 조회
+    async fetchUserSales(userId) {
+        try {
+            const filter = {
+                seller: userId,
+                deletedAt: null,
+                writeStatus: '등록'
+            };
+            return await Product.find(filter).populate("category", "name").populate("region", "level2");
+
+        } catch (err) {
+            console.error("판매 상품 조회 오류", err);
+            throw new Error("판매 상품을 불러오는 중 오류가 발생했습니다.");
+        }
+    }
 }
 
 module.exports = {ProductService};

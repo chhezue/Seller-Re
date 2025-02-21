@@ -33,9 +33,13 @@ class ProductRoutes {
         //지역 정보 받아오기
         this.router.get('/regions', this.productController.getRegions.bind(this.productController));
 
+        // 로그인된 회원 판매 상품 조회
+        this.router.get('/mySales', this.authMiddleware.authenticateToken.bind(this.authMiddleware), this.productController.getUserSales.bind(this.productController))
+
         // 상품 상세 정보 조회
         // GET /api/products/:id
         this.router.get('/:id', this.productController.getDetailedProduct.bind(this.productController));
+
     }
 }
 

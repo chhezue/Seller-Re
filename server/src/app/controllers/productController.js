@@ -151,6 +151,18 @@ class ProductController {
             next(err); // 글로벌 에러 핸들러로 전달
         }
     }
+
+    // 로그인된 회원 판매 상품 조회
+    async getUserSales(req, res) {
+        try {
+            const userId = req.user.id;
+            const products = await this.productService.fetchUserSales(userId);
+            res.status(200).json(products);
+        } catch (err) {
+            console.error("판매 상품 조회 오류", err);
+            res.status(500).json({ message: "서버 오류", error: err.message });
+        }
+    }
 }
 
 module.exports = {ProductController};
