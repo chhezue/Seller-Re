@@ -34,16 +34,25 @@ class ProductController {
         console.log('postProduct ');
 
         try {
-            const {productName, tradeType, price, description, category, isTemporary, region} = req.body;
+            const {productName, tradeType, price, description, category, isTemporary, region, productId} = req.body;
             const uploadTime = +new Date();
             const userId = req.user.id;
             //파일명을 함께 저장. API를 이용하여 링크로 파일명을 검색하는것보다 DB에 저장.
             const uploadFiles = [];
+            
+            // 삭제된 이미지 처리
+            if (req.body.deletedImages){
+                const deletedImages = JSON.parse(req.body.deletedImages);
+                if (deletedImages.length > 0){
+                    //deletedImages 는 []. 하나씩 구글드라이브로 삭제처리 해주어야 함.
+                    console.log(deletedImages);
+                }
+            }
 
             if (!req.files || req.files.length < 1) {
                 return res.status(400).json({error: '업로드 할 이미지가 없습니다.'});
             }
-
+            
             // 파일 업로드
             const uploadPromises = req.files.map(async (file) => {
                 try {
@@ -62,7 +71,8 @@ class ProductController {
             const imageUrls = await Promise.all(uploadPromises);
 
             // 상품 등록
-            const newProduct = await this.productService.addProduct({
+            const newProduct = await this.productService.updateOrCreateProduct({
+                _id: productId,
                 name: productName,
                 price,
                 description,

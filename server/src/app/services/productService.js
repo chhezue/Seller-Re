@@ -20,10 +20,17 @@ class ProductService {
         return await Region.find();
     }
 
-    async addProduct(product) {
+    async updateOrCreateProduct(product) {
         console.log('addproduct ', product);
-        const newProduct = new Product(product);
-        return await newProduct.save();
+        const {productId,_id, ...productData} = product;
+        console.log('updateOrCreateProduct. productId', productId);
+        console.log('updateOrCreateProduct. productData', productData);
+        
+        const filter = productId? {_id: productId} : {};    // _id가 있으면 해당 문서 찾기, 없으면 새 문서 생성
+        const options = {upsert : true, newProduct : true}  // upsert 활성화, new -> 업데이트된 문서 반환
+        // const newProduct = new Product(product);
+        // return await newProduct.save();
+        return await Product.findOneAndUpdate(filter,  productData, options);
     }
 
     // 모든 상품 목록 조회
