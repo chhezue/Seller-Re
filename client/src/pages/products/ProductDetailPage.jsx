@@ -50,7 +50,7 @@ export default function ProductDetailPage() {
     // 구글 드라이브 이미지 변환 함수
     const convertGoogleDriveUrl = (url) => {
         const match = url.match(/id=([^&]+)/);
-        return match ? `https://drive.google.com/uc?export=view&id=${match[1]}` : url;
+        return match ? `https://lh3.google.com/u/0/d/${match[1]}` : url;
     };
 
     return (
@@ -98,7 +98,7 @@ export default function ProductDetailPage() {
                                 images={product.fileUrls.map(url => {
                                     console.log("처리 전 URL:", url);
                                     const fileId = url.split('id=')[1];
-                                    const processedUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+                                    const processedUrl = `https://lh3.google.com/u/0/d/${fileId}`;
                                     console.log("처리 후 URL:", processedUrl);
                                     return processedUrl;
                                 })} 

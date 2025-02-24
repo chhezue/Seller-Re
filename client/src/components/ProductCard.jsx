@@ -25,6 +25,12 @@ export default function ProductCard({ product, refCallback }) {
         updatedAt: product.updatedAt
     });
 
+    // Google Drive URL 변환 함수 추가
+    const convertGoogleDriveUrl = (url) => {
+        const match = url.match(/id=([^&]+)/);
+        return match ? `https://lh3.google.com/u/0/d/${match[1]}` : url;
+    };
+
     return (
         <div 
             className="border p-4 rounded cursor-pointer hover:shadow-lg transition-shadow"
@@ -32,7 +38,11 @@ export default function ProductCard({ product, refCallback }) {
             ref={refCallback}
         >
             {product.fileUrls && product.fileUrls.length > 0 && (
-                <img src={product.fileUrls[0]} alt={product.name} className="w-full h-32 object-cover mb-2 product-image" />
+                <img 
+                    src={convertGoogleDriveUrl(product.fileUrls[0])} 
+                    alt={product.name} 
+                    className="w-full h-32 object-cover mb-2 product-image" 
+                />
             )}
             <h3 className="text-lg font-semibold truncate mb-1" title={product.name}>{product.name}</h3>
             <div className="flex flex-col gap-1">
