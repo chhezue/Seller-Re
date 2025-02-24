@@ -170,7 +170,6 @@ class MakeDummy {
             };
 
             const { users, categories } = await fetchData(); // fetchData 호출
-            // const { users, categories } =  fetchData(); // fetchData 호출
 
             const generateDummyProduct = (count) => {
                 const products = [];
@@ -200,7 +199,8 @@ class MakeDummy {
                         seller: user._id,
                         status: writeStatus === '임시저장' ? '임시저장' : (Math.random() < 0.5 ? '판매중' : '판매완료'),
                         writeStatus: writeStatus,
-                        region: user.region
+                        region: user.region,
+                        price: 1000
                     });
                 }
                 return products;
