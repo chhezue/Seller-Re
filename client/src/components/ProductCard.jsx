@@ -31,7 +31,9 @@ export default function ProductCard({ product, refCallback }) {
             onClick={() => navigate(`/products/${product._id}`)}
             ref={refCallback}
         >
-            <img src={product.fileUrls[0]} alt={product.name} className="w-full h-32 object-cover mb-2" />
+            {product.fileUrls && product.fileUrls.length > 0 && (
+                <img src={product.fileUrls[0]} alt={product.name} className="w-full h-32 object-cover mb-2 product-image" />
+            )}
             <h3 className="text-lg font-semibold truncate mb-1" title={product.name}>{product.name}</h3>
             <div className="flex flex-col gap-1">
                 <div className="flex items-center justify-between">

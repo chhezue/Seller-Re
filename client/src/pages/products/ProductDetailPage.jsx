@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import ImageSlider from "../../components/ImageSlider";
 
 export default function ProductDetailPage() {
     const { id } = useParams();
@@ -11,6 +12,7 @@ export default function ProductDetailPage() {
             try {
                 const response = await fetch(`http://localhost:9000/api/products/${id}`);
                 const data = await response.json();
+                console.log("받은 이미지 URLs:", data.detailedProduct.fileUrls);
                 setProduct(data.detailedProduct);
             } catch (error) {
                 console.error("상품 상세 정보 불러오기 실패:", error);
@@ -20,17 +22,16 @@ export default function ProductDetailPage() {
         fetchProductDetail();
     }, [id]);
 
-    const handlePrevImage = () => {
-        setCurrentImageIndex((prevIndex) => 
-            prevIndex === 0 ? product.fileUrls.length - 1 : prevIndex - 1
-        );
-    };
-
-    const handleNextImage = () => {
-        setCurrentImageIndex((prevIndex) => 
-            prevIndex === product.fileUrls.length - 1 ? 0 : prevIndex + 1
-        );
-    };
+    useEffect(() => {
+        if (product) {
+            console.log("Product details loaded:", product);
+            if (product.fileUrls) {
+                console.log("Image URLs:", product.fileUrls);
+            } else {
+                console.log("No image URLs found.");
+            }
+        }
+    }, [product]);
 
     if (!product) return <div>로딩중...</div>;
 
@@ -44,6 +45,12 @@ export default function ProductDetailPage() {
             hour: '2-digit',
             minute: '2-digit',
         });
+    };
+
+    // 구글 드라이브 이미지 변환 함수
+    const convertGoogleDriveUrl = (url) => {
+        const match = url.match(/id=([^&]+)/);
+        return match ? `https://drive.google.com/uc?export=view&id=${match[1]}` : url;
     };
 
     return (
@@ -64,35 +71,48 @@ export default function ProductDetailPage() {
                             </svg>
                             삭제
                         </button>
+                        <button // '목록으로' 버튼 누르면 -1 페이지로 이동
+                            className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors duration-200 flex items-center"
+                            onClick={() => window.history.back()} 
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5 mr-1"
+                                viewBox="0 0 24 24"
+                                fill="currentColor"
+                            >
+                                <path
+                                    fillRule="evenodd"
+                                    d="M4 6a1 1 0 011-1h14a1 1 0 110 2H5a1 1 0 01-1-1zm0 5a1 1 0 011-1h14a1 1 0 110 2H5a1 1 0 01-1-1zm0 5a1 1 0 011-1h14a1 1 0 110 2H5a1 1 0 01-1-1z"
+                                    clipRule="evenodd"
+                                />
+                            </svg>
+                            목록으로
+                        </button>
                     </div>
                 </div>
                 {product.fileUrls && product.fileUrls.length > 0 && (
-                    <div className="relative mb-4">
-                        <img 
-                            src={product.fileUrls[currentImageIndex]} 
-                            alt={`${product.name} 이미지 ${currentImageIndex + 1}`} 
-                            className="w-full h-64 object-cover mb-2" 
-                        />
-                        <button 
-                            onClick={handlePrevImage} 
-                            className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-gray-700 text-white px-2 py-1 rounded-md"
-                        >
-                            &lt;
-                        </button>
-                        <button 
-                            onClick={handleNextImage} 
-                            className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-gray-700 text-white px-2 py-1 rounded-md"
-                        >
-                            &gt;
-                        </button>
+                    <div className="mb-4">
+                        <div className="w-full h-96">
+                            <ImageSlider 
+                                images={product.fileUrls.map(url => {
+                                    console.log("처리 전 URL:", url);
+                                    const fileId = url.split('id=')[1];
+                                    const processedUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+                                    console.log("처리 후 URL:", processedUrl);
+                                    return processedUrl;
+                                })} 
+                            />
+                        </div>
                     </div>
                 )}
                 <p className="text-gray-600 mb-2">
-                    {product.category} · {
+                    {product.category} · {product.favoriteCount} 관심<br></br>
+                    {
                         product.updatedAt 
                             ? `수정일: ${formatDate(product.updatedAt)}` 
                             : `생성일: ${formatDate(product.createdAt)}`
-                    } · {product.favoriteCount} 관심
+                    }
                 </p>
                 <p className="text-xl font-bold mb-4">{product.price}원</p>
                 <p className="mb-4">{product.description}</p>
@@ -104,7 +124,7 @@ export default function ProductDetailPage() {
                         {product.seller.profileImage && (
                             <img src={product.seller.profileImage} alt="프로필 이미지" className="w-16 h-16 object-cover mr-4" />
                         )}
-                        <p>{product.seller.username}</p>
+                        <p>{product.seller.username} · {product.seller.region}</p>
                     </div>
                 </div>
             </div>
