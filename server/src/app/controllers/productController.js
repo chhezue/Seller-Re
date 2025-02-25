@@ -139,6 +139,7 @@ class ProductController {
         try {
             const userId = req.user.id;
             const products = await this.productService.fetchUserSales(userId);
+            console.log("products: ", products)
             res.status(200).json(products);
         } catch (err) {
             console.error("판매 상품 조회 오류", err);
