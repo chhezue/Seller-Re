@@ -173,7 +173,7 @@ export default function ProductUploadPage() {
 
         if (remainingSlots > 0) {
             const filesToProcess = fileArray.slice(0, remainingSlots);
-            const newImages = filesToProcess.map((file) => {
+            const newImagePromises = filesToProcess.map((file) => {
                 return new Promise((resolve) => {
                     const reader = new FileReader();
                     reader.onloadend = () => resolve(reader.result);
@@ -181,12 +181,14 @@ export default function ProductUploadPage() {
                 });
             });
 
-            Promise.all(newImages).then((images) => {
+            Promise.all(newImagePromises).then((images) => {
                 setImagePreviews((prev) => [...prev, ...images]);
-                setImageFiles((prev) => [...prev, ...filesToProcess]);
+                setImageFiles((prev) => [...prev, ...filesToProcess]); // File 객체 저장
             });
         }
     };
+
+
 
     const handleImageUpload = (event) => {
         handleImageFiles(event.target.files);
@@ -211,18 +213,21 @@ export default function ProductUploadPage() {
     const handleImageDelete = (index) => {
         const imageToDelete = imagePreviews[index];
 
-        if (imageToDelete.startsWith("https://lh3.google.com/u/0/d/")) {
-            // 기존에 불러온 이미지면 삭제 목록에 추가
+        if (typeof imageToDelete === "string" && imageToDelete.startsWith("https://lh3.google.com/u/0/d/")) {
+            // 기존에 등록된 Google Drive 이미지인 경우 → 삭제할 이미지 ID 저장
             const match = imageToDelete.match(/\/d\/([^?]+)/);
             if (match) {
                 setDeletedImages((prev) => [...prev, match[1]]);
             }
+        } else {
+            // 새로 추가된 이미지 삭제 → imageFiles에서도 제거
+            setImageFiles((prev) => prev.filter((_, i) => i !== index));
         }
 
-        // 미리보기 및 파일 리스트에서 삭제
+        // 미리보기에서 삭제
         setImagePreviews((prev) => prev.filter((_, i) => i !== index));
-        setImageFiles((prev) => prev.filter((_, i) => i !== index));
     };
+
 
     const handleSubmit = async (e, isTemporary = false) => {
         e.preventDefault();

@@ -37,22 +37,25 @@ class ProductController {
             const {productName, tradeType, price, description, category, isTemporary, region, productId} = req.body;
             const uploadTime = +new Date();
             const userId = req.user.id;
-            //파일명을 함께 저장. API를 이용하여 링크로 파일명을 검색하는것보다 DB에 저장.
             const uploadFiles = [];
-            
+            let imageUrls = [];
+
             // 삭제된 이미지 처리
-            if (req.body.deletedImages){
+            if (req.body.deletedImages) {
                 const deletedImages = JSON.parse(req.body.deletedImages);
-                if (deletedImages.length > 0){
-                    //deletedImages 는 []. 하나씩 구글드라이브로 삭제처리 해주어야 함.
-                    console.log(deletedImages);
+                if (deletedImages.length > 0) {
+                    try {
+                        await this.googleDriveService.deleteFile(deletedImages, process.env.GOOGLE_DRIVE_PRODUCTS_IMAGE); // Google Drive에서 삭제
+                    } catch (error) {
+                        console.error(`이미지 삭제 실패: ${deletedImages}`, error);
+                    }
                 }
             }
 
             if (!req.files || req.files.length < 1) {
                 return res.status(400).json({error: '업로드 할 이미지가 없습니다.'});
             }
-            
+
             // 파일 업로드
             const uploadPromises = req.files.map(async (file) => {
                 try {
@@ -68,21 +71,21 @@ class ProductController {
             });
 
             // 업로드된 이미지 URL들
-            const imageUrls = await Promise.all(uploadPromises);
+            imageUrls = await Promise.all(uploadPromises);
 
             // 상품 등록
             const newProduct = await this.productService.updateOrCreateProduct({
                 _id: productId,
+                fileUrls: imageUrls,
                 name: productName,
                 price,
                 description,
                 category,
                 seller: userId,
-                writeStatus: isTemporary ? '임시저장' : '등록'  ,
+                writeStatus: isTemporary ? '임시저장' : '등록',
                 transactionType: (tradeType === 'sale' ? '판매' : '나눔'),
-                status: isTemporary? '임시저장' : '판매중',
+                status: isTemporary ? '임시저장' : '판매중',
                 region, //
-                fileUrls: imageUrls,
                 fileNames: uploadFiles
             });
 
@@ -171,7 +174,7 @@ class ProductController {
             res.status(200).json(products);
         } catch (err) {
             console.error("판매 상품 조회 오류", err);
-            res.status(500).json({ message: "서버 오류", error: err.message });
+            res.status(500).json({message: "서버 오류", error: err.message});
         }
     }
 }

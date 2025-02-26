@@ -22,15 +22,30 @@ class ProductService {
 
     async updateOrCreateProduct(product) {
         console.log('addproduct ', product);
-        const {productId,_id, ...productData} = product;
+        // const {productId,_id, ...productData} = product;
+        const {productId, fileUrls, ...productData} = product;
         console.log('updateOrCreateProduct. productId', productId);
         console.log('updateOrCreateProduct. productData', productData);
-        
-        const filter = productId? {_id: productId} : {};    // _id가 있으면 해당 문서 찾기, 없으면 새 문서 생성
-        const options = {upsert : true, newProduct : true}  // upsert 활성화, new -> 업데이트된 문서 반환
-        // const newProduct = new Product(product);
-        // return await newProduct.save();
-        return await Product.findOneAndUpdate(filter,  productData, options);
+
+        const filter = productId ? {_id: productId} : {};    // _id가 있으면 해당 문서 찾기, 없으면 새 문서 생성
+        const options = {upsert: true, newProduct: true}  // upsert 활성화, new -> 업데이트된 문서 반환
+
+        let existingProduct = null;
+
+        if (productId) {
+            existingProduct = await Product.findById(productId);
+        }
+
+        let updatedFileUrls = fileUrls || [];
+
+        if (existingProduct) {
+            // 기존 파일 URL에서 삭제된 이미지를 제외하고 유지
+            updatedFileUrls = [
+                ...existingProduct.fileUrls.filter(url => !product.deletedImages.includes(url)),
+                ...updatedFileUrls
+            ];
+        }
+        return await Product.findOneAndUpdate(filter, {...productData, fileUrls: updatedFileUrls}, options);
     }
 
     // 모든 상품 목록 조회
@@ -90,7 +105,7 @@ class ProductService {
                 // const product = await Product.find({
                 seller: (userId),
                 writeStatus: "임시저장",
-                status : "임시저장",
+                status: "임시저장",
                 // $or: [
                 //     {DEL_YN: {$exists: false}}, // DEL_YN 필드가 존재하지 않는 경우
                 //     {DEL_YN: "N"} // DEL_YN이 "N"인 경우
@@ -144,14 +159,14 @@ class ProductService {
             //     $set: {DEL_YN: "Y"}
             // });
             // // matchedCount === 0 : false. 수정할 데이터가 없음
-            
+
             // 2. 삭제 플래그 방법 변경
             const resultSoftDelete = await Product.updateOne({
-                seller : userId, 
-                _id : postId,
-                status : originalStatus
+                seller: userId,
+                _id: postId,
+                status: originalStatus
             }, {
-                $set: {status : "삭제"}
+                $set: {status: "삭제"}
             })
             return (resultSoftDelete.matchedCount !== 0);
         } catch (err) {

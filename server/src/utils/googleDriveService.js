@@ -97,7 +97,7 @@ class GoogleDriveService {
             // folderFiles.forEach(file => console.log(` - ${file.name} (${file.id})`));
             
             for (const filePath of filePaths){
-                const fileId = this.extractFileIdFromUrl(filePath);
+                const fileId = this.extractFileIdFromUrl("https://drive.google.com/uc?id="+filePath);
 
                 // //권한은 owner 확인
                 // const fileMetadata = await this.drive.files.get({
