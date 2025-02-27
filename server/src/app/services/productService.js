@@ -1,7 +1,6 @@
 const Category = require('../models/Category');
 const Product = require("../models/Product");
 const Region = require("../models/Region");
-const DetailedProduct = require("../models/DetailedProduct");
 const Favorite = require("../models/Favorite");
 const User = require("../models/User");
 
@@ -68,9 +67,9 @@ class ProductService {
     }
 
     // 모든 상품 목록 조회
-    async getProducts(level1, level2, category) {
+    async getProducts(level1, level2, category, transactionType, skip, limit) {
         try {
-            let filter = {}; // 동적 필터 객체
+            let filter = { status: '판매중' };
 
             // 1. level1, level2로 region_id 찾기
             if (level1 || level2) {
@@ -78,30 +77,47 @@ class ProductService {
                 if (level1) regionFilter.level1 = level1;
                 if (level2) regionFilter.level2 = level2;
 
-                const region = await Region.findOne(regionFilter);
-                if (region) {
-                    filter.region = region._id; // 찾은 region_id 추가
+                const regions = await Region.find(regionFilter); // findOne을 find로 변경
+                if (regions && regions.length > 0) {
+                    filter.region = { $in: regions.map(r => r._id) }; // 여러 region_id를 포함하도록 수정
                 } else {
-                    return []; // 지역이 없으면 빈 배열 반환
+                    return [];
                 }
             }
 
             // 2. category로 category_id 찾기
             if (category) {
-                const categoryData = await Category.findOne({name: category});
-                if (categoryData) {
-                    filter.category = categoryData._id; // 찾은 category_id 추가
-                } else {
-                    return []; // 카테고리가 없으면 빈 배열 반환
-                }
+                filter.category = category;
             }
 
-            // 3. status가 '임시저장'인 것은 제외
-            filter.status = '판매중' || '판매완료';
+            // 3. transactionType(나눔, 판매) 필터 추가
+            if (transactionType) {
+                filter.transactionType = transactionType;
+            }
 
-            // 4. 필터를 이용해 product 리스트 조회
-            const products = await Product.find(filter);
-            return products;
+            const products = await Product.find(filter)
+                .skip(parseInt(skip))
+                .limit(parseInt(limit))
+                .populate('region', 'level1 level2')
+                .populate('category', 'name')
+                .sort({ createdAt: -1 });
+
+            // MongoDB 문서를 JSON으로 변환할 때 날짜를 ISO 문자열로 변환
+            return products.map(product => {
+                const productObj = product.toObject(); // Mongoose 문서를 일반 객체로 변환
+                return {
+                    _id: productObj._id,
+                    name: productObj.name,
+                    price: productObj.price,
+                    fileUrls: productObj.fileUrls,
+                    transactionType: productObj.transactionType,
+                    region: productObj.region ? `${productObj.region.level1} ${productObj.region.level2}` : null,
+                    category: productObj.category?.name,
+                    createdAt: productObj.createdAt?.toISOString(),
+                    updatedAt: productObj.updatedAt?.toISOString(),
+                    favoriteCount: productObj.favoriteCount
+                };
+            });
         } catch (error) {
             console.error("상품 조회 중 오류 발생:", error);
             throw error;
@@ -121,7 +137,6 @@ class ProductService {
     async getTempPostProductByUserId(userId) {
         try {
             const product = await Product.findOne({
-                // const product = await Product.find({
                 seller: (userId),
                 writeStatus: "임시저장",
                 status: "임시저장",
@@ -195,30 +210,46 @@ class ProductService {
     }
 
 
-    // 상품 상세 조회
-    async getDetailedProduct(id) {
+    // 상품 상세 조회(상품 아이디로 연결)
+    // 수정 필요: 거래 희망 장소, 파일 이미지 업로드
+    async getDetailedProduct(productId) {
+        console.log('[getDetailedProduct], productId:', productId);
+
         try {
-            // 불러와야 하는 것들: 이미지, 카테고리, 수정일, 찜 개수, 상품명, 상품 소개, 거래 희망 장소, 작성자
-            // 불러와서 DetailedProduct 객체에 넣음.
-            const detailedProduct = new DetailedProduct();
-
             // product 데이터 조회
-            const product = await Product.findOne({_id: id});
-            detailedProduct.product = product;
+            const product = await Product.findOne({ _id: productId });
+            console.log('Found product:', product);
+            
+            if (!product) {
+                throw new Error('상품을 찾을 수 없습니다.');
+            }
 
-            // favorite 개수 조회
-            // countDocuments: 문서의 개수 조회
-            const favoriteCount = await Favorite.countDocuments({productId: id});
-            detailedProduct.favoriteCount = favoriteCount;
-
-            // user (작성자) 정보 조회
+            const category = await Category.findById(product.category);
+            const region = await Region.findById(product.region); console.log('Found region:', region);
+            const favoriteCount = await Favorite.countDocuments({ productId: productId });
             const seller = await User.findById(product.seller);
-            detailedProduct.seller = seller;
 
-            // 거래 희망 장소 조회 어떻게..
-            // detailedProduct.location = product.location;
-
-            return detailedProduct;
+            // 필요한 정보만 객체로 구성하여 반환
+            return {
+                _id: product._id, // 상품 id
+                name: product.name, // 상품 이름
+                category: category ? category.name : null, // category.name으로 반환
+                transactionType: product.transactionType, // 거래 유형(판매, 나눔)
+                description: product.description, // 상품 설명
+                status: product.status, // 상품 상태(판매중, 판매완료, 임시저장)
+                writeStatus: product.writeStatus,
+                region: region ? `${region.level1} ${region.level2}` : null, // region.name으로 변환
+                price: product.price,
+                fileUrls: product.fileUrls,
+                createdAt: product.createdAt,
+                updatedAt: product.updatedAt,
+                favoriteCount: favoriteCount,
+                seller: {
+                    _id: seller._id,
+                    username: seller.username,
+                    profileImage: seller.profileImage
+                }
+            };
         } catch (error) {
             console.error("상품 상세 출력 중 오류 발생:", error);
             throw error;

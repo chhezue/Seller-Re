@@ -7,11 +7,12 @@ class ProductController {
         this.productService = new ProductService();
         this.googleDriveService = new GoogleDriveService();
     }
-
+    
+    // 카테고리 가져오기
     async getCategories(req, res) {
         try {
             const categories = await this.productService.fetchAllCategories();
-            // console.log('category : ', categories);
+            console.log('category : ', categories);
             res.status(200).json(categories);
         } catch (err) {
             res.status(500).json({error: err.message});
@@ -102,17 +103,18 @@ class ProductController {
 
     // 상품 목록 가져오기
     async getProducts(req, res, next) {
-        console.log('getProduct ');
+        console.log('getProducts ');
 
         // 필터 조건: 지역, 카테고리
         // 유저는 필터 조건을 보내지 않을 수도 있으므로(전체 조회) req.params가 아닌 req.query 사용
         // 요청 URL: seller_re_backend/posts?level1=경기도&level2=인천&category=도서
-        const {level1, level2, category} = req.query;
-        console.log('level1: ', level1, '\tlevel2: ', level2, '\tcategory: ', category);
+        const { level1, level2, category, transactionType, page = 1, limit = 20 } = req.query;
+        console.log('level1: ', level1, '\tlevel2: ', level2, '\tcategory: ', category, '\ttransactionType: ', transactionType);
 
         try {
-            const products = await this.productService.getProducts(level1, level2, category);
-            return res.status(201).json({message: '상품 목록 조회 성공', products: products});
+            const skip = (page - 1) * limit;
+            const products = await this.productService.getProducts(level1, level2, category, transactionType, skip, limit);
+            return res.status(201).json({ message: `${transactionType} 타입의 상품 목록 조회 성공`, products: products });
         } catch (err) {
             next(err); // 글로벌 에러 핸들러로 전달
         }
