@@ -23,7 +23,7 @@ class ProductService {
     async updateOrCreateProduct(product) {
         console.log('addproduct ', product);
         // const {productId,_id, ...productData} = product;
-        const {productId, fileUrls, ...productData} = product;
+        const {_id: productId, fileUrls, ...productData} = product;
         console.log('updateOrCreateProduct. productId', productId);
         console.log('updateOrCreateProduct. productData', productData);
 
@@ -34,17 +34,36 @@ class ProductService {
 
         if (productId) {
             existingProduct = await Product.findById(productId);
+            console.log('existingProduct', existingProduct);
         }
 
         let updatedFileUrls = fileUrls || [];
 
         if (existingProduct) {
-            // 기존 파일 URL에서 삭제된 이미지를 제외하고 유지
+            const baseDriveUrl = "https://drive.google.com/uc?id=";
+
+            // deletedImage 에는 id만 들어오기에 링크를 추가해야함.
+            const deletedFileUrls = product.deletedImages.map(id => `${baseDriveUrl}${id}`);
+
+            // 기존 파일 중 삭제할 파일을 제외한 파일 + 새로 추가된 파일만 남김
             updatedFileUrls = [
-                ...existingProduct.fileUrls.filter(url => !product.deletedImages.includes(url)),
-                ...updatedFileUrls
+                ...existingProduct.fileUrls.filter(url => !deletedFileUrls.includes(url)),
+                ...fileUrls // 새 파일 추가
             ];
         }
+
+        // if (existingProduct) {
+        //     // 삭제할 파일들
+        //     const deletedFileUrls = existingProduct.fileUrls.filter(url => product.deletedImages.includes(url));
+        //     console.log(`existingProduct.deletedFileUrls : ${deletedFileUrls}`);
+        //
+        //     // 기존 파일 중 삭제할 파일을 제외한 파일 + 새로 추가된 파일만 남김
+        //     updatedFileUrls = [
+        //         ...existingProduct.fileUrls.filter(url => !deletedFileUrls.includes(url)),
+        //         ...fileUrls // 새 파일 추가
+        //     ];
+        //     console.log(`existingProduct.updatedFileUrls : ${updatedFileUrls}`);
+        // }
         return await Product.findOneAndUpdate(filter, {...productData, fileUrls: updatedFileUrls}, options);
     }
 

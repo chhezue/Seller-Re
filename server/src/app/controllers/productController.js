@@ -39,10 +39,13 @@ class ProductController {
             const userId = req.user.id;
             const uploadFiles = [];
             let imageUrls = [];
+            let deletedImages = [];
 
             // 삭제된 이미지 처리
             if (req.body.deletedImages) {
-                const deletedImages = JSON.parse(req.body.deletedImages);
+                // const deletedImages = JSON.parse(req.body.deletedImages);
+                deletedImages = JSON.parse(req.body.deletedImages);
+                console.log('DELETE 1 : ', deletedImages);
                 if (deletedImages.length > 0) {
                     try {
                         await this.googleDriveService.deleteFile(deletedImages, process.env.GOOGLE_DRIVE_PRODUCTS_IMAGE); // Google Drive에서 삭제
@@ -86,7 +89,8 @@ class ProductController {
                 transactionType: (tradeType === 'sale' ? '판매' : '나눔'),
                 status: isTemporary ? '임시저장' : '판매중',
                 region, //
-                fileNames: uploadFiles
+                fileNames: uploadFiles,
+                deletedImages,
             });
 
             return res.status(201).json({message: '상품 등록 성공', product: newProduct});
