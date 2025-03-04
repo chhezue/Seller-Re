@@ -3,12 +3,11 @@ const cors = require('cors');
 const cookieParser = require("cookie-parser");
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swaggerConfig')
-
 const http = require('http'); 
-const { Server } = require('socket.io'); 
 
 const {UserRoutes} = require("./routes/userRoutes");
 const {ProductRoutes} = require("./routes/productRoutes");
+const {SocketHandler} = require("./socketHandler");
 
 class App {
     constructor() {
@@ -16,16 +15,10 @@ class App {
         
         // socket
         this.server = http.createServer(this.app);
-        this.io = new Server(this.server, {
-            cors : {
-                origin : "http://localhost:3000",
-                methods : ["GET", "POST"]
-            }
-        });
         this.setMiddlewares();
         this.setRoutes();
         this.setSwagger();
-        this.setSocketEvents();
+        this.socketHandler = new SocketHandler(this.server);
     }
 
     setMiddlewares() {
@@ -58,31 +51,6 @@ class App {
     setSwagger() {
         // 주소: localhost:9000/api-docs
         this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-    }
-
-    setSocketEvents(){
-        let onlineUsers = {};   // 온라인 사용자 목록
-        
-        this.io.on('connection', (socket) => {
-            console.log('new user connected : ', socket.id);
-            
-            socket.on('registerUser', (userId) => {
-                onlineUsers[userId] = socket.id;
-                console.log('online users : ', onlineUsers);
-            })
-            
-            // 특정 유저의 메시지 가져오기
-            socket.on("getMessages", async ({ sender, receiver }) => {
-                const messages = await Chat.find({
-                    $or: [
-                        { sender, receiver },
-                        { sender: receiver, receiver: sender }
-                    ]
-                }).sort({ timestamp: 1 });
-
-                socket.emit("loadMessages", messages);
-            });
-        })
     }
     
     listen(port) {
