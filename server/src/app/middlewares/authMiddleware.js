@@ -28,6 +28,22 @@ class AuthMiddleware {
             return res.status(403).json({message: 'Invalid or expired token'});
         }
     }
+
+    authenticateSocket(socket, next) {
+        try {
+            const token = socket.handshake.auth?.token || socket.handshake.query?.token;
+            if (!token) {
+                authEventEmitter.emit('tokenError', { message: 'No token provided', ip: socket.handshake.address });
+                return next(new Error('No token provided'));
+            }
+
+            socket.user = this.jwtUtils.verifyAccessToken(token);
+            return next();
+        } catch (err) {
+            authEventEmitter.emit('tokenError', { message: 'Invalid or expired token', ip: socket.handshake.address });
+            return next(new Error('Invalid or expired token'));
+        }
+    }
 }
 
 

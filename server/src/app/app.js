@@ -3,16 +3,22 @@ const cors = require('cors');
 const cookieParser = require("cookie-parser");
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swaggerConfig')
+const http = require('http'); 
 
 const {UserRoutes} = require("./routes/userRoutes");
 const {ProductRoutes} = require("./routes/productRoutes");
+const {SocketHandler} = require("./socketHandler");
 
 class App {
     constructor() {
         this.app = express();
+        
+        // socket
+        this.server = http.createServer(this.app);
         this.setMiddlewares();
         this.setRoutes();
         this.setSwagger();
+        this.socketHandler = new SocketHandler(this.server);
     }
 
     setMiddlewares() {
