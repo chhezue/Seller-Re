@@ -35,15 +35,18 @@ export const registerUser = (userId) => {
 
 export const sendMessage = (sender, receiver, message) => {
     if (socket) {
+        console.log('SEND MESSAGE : ', sender, receiver, message);
         socket.emit("sendMessage", { sender, receiver, message });
     }
 };
 
-export const getMessages = (sender, receiver) => {
+export const getMessages = (sender, receiver, setChatHistory) => {
     if (socket) {
         socket.emit("getMessages", { sender, receiver });
         socket.on("loadMessages", (messages) => {
             console.log("Chat History:", messages);
+            // 받은 메시지를 chatHistory 상태에 업데이트
+            setChatHistory(messages);
         });
     }
 };

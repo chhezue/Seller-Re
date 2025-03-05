@@ -54,7 +54,9 @@ class App {
     }
     
     listen(port) {
-        this.app.listen(port, () => {
+        // this.app.listen(port, () => {
+        // HTTP + WebSocket 서버 
+        this.server.listen(port, () => {
             console.log(`Server listening on port ${port}`);
         });
     }
