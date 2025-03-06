@@ -71,7 +71,14 @@ class SocketHandler {
     async handleSendMessage(socket, { sender, receiver, message }) {
         try {
             const newMessage = new Chat({ sender, receiver, message });
-            await newMessage.save();
+            await newMessage.save()
+                .then((savedMessage) => {
+                    socket.to(receiver).emit("receiveMessage", savedMessage);
+                })
+                .catch((err) => {
+                    console.error('handleSendMessage : ', err);
+                })
+            ;
 
             if (this.onlineUsers[receiver]) {
                 this.io.to(this.onlineUsers[receiver]).emit("receiveMessage", newMessage);

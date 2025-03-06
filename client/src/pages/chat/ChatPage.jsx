@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { connectSocket, registerUser, sendMessage, getMessages, disconnectSocket } from "../../utils/socket";
+import { connectSocket, registerUser, sendMessage, getMessages, disconnectSocket, getSocket } from "../../utils/socket";
 
 const ChatPage = () => {
     const [user, setUser] = useState(null);
@@ -29,6 +29,13 @@ const ChatPage = () => {
         if (token) {
             connectSocket(token);
             registerUser(user.id);
+            
+            const socket = getSocket();
+            if (socket) {
+                socket.on("receiveMessage", (message) => {
+                    setChatHistory((prevMessages) => [...prevMessages, message])
+                });
+            }
         }
 
         return () => {
@@ -67,7 +74,7 @@ const ChatPage = () => {
             <div className="border p-2 h-40 overflow-auto mb-2">
                 {chatHistory.map((msg, index) => (
                     <div key={index} className="p-1 border-b">
-                        <strong>{msg.sender === user.id ? "You" : "Them"}:</strong> {msg.message}
+                        <strong>{msg.sender === user.id ? "You" : user.id}:</strong> {msg.message}
                     </div>
                 ))}
             </div>

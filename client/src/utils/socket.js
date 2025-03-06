@@ -57,3 +57,5 @@ export const disconnectSocket = () => {
         socket = null;
     }
 };
+
+export const getSocket = () => socket;
