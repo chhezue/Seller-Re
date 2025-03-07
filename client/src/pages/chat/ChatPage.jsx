@@ -1,28 +1,47 @@
 import { useEffect, useState } from "react";
-import { connectSocket, registerUser, sendMessage, getMessages, disconnectSocket } from "../../utils/socket";
+import { connectSocket, registerUser, sendMessage, getMessages, disconnectSocket, getSocket } from "../../utils/socket";
 
-const ChatPage = ({ user, token }) => {
+const ChatPage = () => {
+    const [user, setUser] = useState(null);
+    const [token, setToken] = useState("");
     const [receiver, setReceiver] = useState("");
     const [message, setMessage] = useState("");
     const [chatHistory, setChatHistory] = useState([]);
 
     useEffect(() => {
-        console.log("ChatPage Loaded. user:", user, "token:", token);
+        // localStorage에서 user와 token 가져오기
+        const storedUser = localStorage.getItem("user");
+        const accessToken = localStorage.getItem("accessToken");
 
+        if (storedUser && accessToken) {
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+            setToken(accessToken);
+        }
+    }, []);
+
+    useEffect(() => {
         if (!user || !user.id) {
             console.error("user 객체가 없습니다.");
             return;
         }
-        
+
         if (token) {
             connectSocket(token);
             registerUser(user.id);
+            
+            const socket = getSocket();
+            if (socket) {
+                socket.on("receiveMessage", (message) => {
+                    setChatHistory((prevMessages) => [...prevMessages, message])
+                });
+            }
         }
 
         return () => {
             disconnectSocket();
         };
-    }, [token, user]);
+    }, [user, token]);
 
     const handleSendMessage = () => {
         if (message.trim() && receiver) {
@@ -32,8 +51,12 @@ const ChatPage = ({ user, token }) => {
     };
 
     const handleGetMessages = () => {
-        getMessages(user.id, receiver);
+        getMessages(user.id, receiver, setChatHistory);
     };
+
+    if (!user) {
+        return <div className="p-5 text-center">로그인이 필요합니다.</div>;
+    }
 
     return (
         <div className="p-5 max-w-lg mx-auto bg-white shadow-md rounded-lg">
@@ -51,7 +74,7 @@ const ChatPage = ({ user, token }) => {
             <div className="border p-2 h-40 overflow-auto mb-2">
                 {chatHistory.map((msg, index) => (
                     <div key={index} className="p-1 border-b">
-                        <strong>{msg.sender === user.id ? "You" : "Them"}:</strong> {msg.message}
+                        <strong>{msg.sender === user.id ? "You" : user.id}:</strong> {msg.message}
                     </div>
                 ))}
             </div>
