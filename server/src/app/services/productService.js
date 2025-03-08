@@ -19,9 +19,51 @@ class ProductService {
         return await Region.find();
     }
 
-    async addProduct(product) {
-        const newProduct = new Product(product);
-        return await newProduct.save();
+    async updateOrCreateProduct(product) {
+        console.log('addproduct ', product);
+        // const {productId,_id, ...productData} = product;
+        const {_id: productId, fileUrls, ...productData} = product;
+        console.log('updateOrCreateProduct. productId', productId);
+        console.log('updateOrCreateProduct. productData', productData);
+
+        const filter = productId ? {_id: productId} : {};    // _id가 있으면 해당 문서 찾기, 없으면 새 문서 생성
+        const options = {upsert: true, newProduct: true}  // upsert 활성화, new -> 업데이트된 문서 반환
+
+        let existingProduct = null;
+
+        if (productId) {
+            existingProduct = await Product.findById(productId);
+            console.log('existingProduct', existingProduct);
+        }
+
+        let updatedFileUrls = fileUrls || [];
+
+        if (existingProduct) {
+            const baseDriveUrl = "https://drive.google.com/uc?id=";
+
+            // deletedImage 에는 id만 들어오기에 링크를 추가해야함.
+            const deletedFileUrls = product.deletedImages.map(id => `${baseDriveUrl}${id}`);
+
+            // 기존 파일 중 삭제할 파일을 제외한 파일 + 새로 추가된 파일만 남김
+            updatedFileUrls = [
+                ...existingProduct.fileUrls.filter(url => !deletedFileUrls.includes(url)),
+                ...fileUrls // 새 파일 추가
+            ];
+        }
+
+        // if (existingProduct) {
+        //     // 삭제할 파일들
+        //     const deletedFileUrls = existingProduct.fileUrls.filter(url => product.deletedImages.includes(url));
+        //     console.log(`existingProduct.deletedFileUrls : ${deletedFileUrls}`);
+        //
+        //     // 기존 파일 중 삭제할 파일을 제외한 파일 + 새로 추가된 파일만 남김
+        //     updatedFileUrls = [
+        //         ...existingProduct.fileUrls.filter(url => !deletedFileUrls.includes(url)),
+        //         ...fileUrls // 새 파일 추가
+        //     ];
+        //     console.log(`existingProduct.updatedFileUrls : ${updatedFileUrls}`);
+        // }
+        return await Product.findOneAndUpdate(filter, {...productData, fileUrls: updatedFileUrls}, options);
     }
 
     // 모든 상품 목록 조회
@@ -93,19 +135,21 @@ class ProductService {
     //     });
     // }
     async getTempPostProductByUserId(userId) {
-        console.log('getTempPostProductByUserId 호출됨, userId:', userId); // 함수 호출 여부 확인
-
-
         try {
             const product = await Product.findOne({
                 seller: (userId),
                 writeStatus: "임시저장",
-                $or: [
-                    {DEL_YN: {$exists: false}}, // DEL_YN 필드가 존재하지 않는 경우
-                    {DEL_YN: "N"} // DEL_YN이 "N"인 경우
-                ]
+                status: "임시저장",
+                // $or: [
+                //     {DEL_YN: {$exists: false}}, // DEL_YN 필드가 존재하지 않는 경우
+                //     {DEL_YN: "N"} // DEL_YN이 "N"인 경우
+                // ]
             }).sort({createdAt: -1});
-            
+
+            if (!product) {
+                return null;
+            }
+
             const category = await Category.findById(product.category).exec();
             const region = await Region.findById(product.region).exec();
 
@@ -120,9 +164,10 @@ class ProductService {
                 region: region ? region.name : null,  // region.name으로 변환
                 price: product.price,
                 fileUrls: product.fileUrls,
+                fileNames: product.fileNames,
                 createdAt: product.createdAt,
             };
-            
+
         } catch (err) {
             console.error('쿼리 실행 중 오류 발생:', err); // 에러 발생 시 처리
             throw err; // 에러를 다시 던져서 호출한 곳에서 처리
@@ -130,7 +175,39 @@ class ProductService {
     }
 
 
-    async deleteTempPostProductByUserId(userId) {}
+    async deletePostProduct(userId, postId, originalStatus) {
+        try {
+            // //1. 완전삭제
+            // const resultHardDelete = await Product.deleteOne({
+            //     seller: userId,
+            //     _id: postId,
+            // });
+            // // deldteCount === 0 : false. 삭제할 데이터가 없음
+            // return (resultHardDelete.deletedCount !== 0);
+
+            // //2. 삭제 플래그 변경
+            // const resultSoftDelete = await Product.updateOne({
+            //     seller: userId,
+            //     _id: postId,
+            // }, {
+            //     $set: {DEL_YN: "Y"}
+            // });
+            // // matchedCount === 0 : false. 수정할 데이터가 없음
+
+            // 2. 삭제 플래그 방법 변경
+            const resultSoftDelete = await Product.updateOne({
+                seller: userId,
+                _id: postId,
+                status: originalStatus
+            }, {
+                $set: {status: "삭제"}
+            })
+            return (resultSoftDelete.matchedCount !== 0);
+        } catch (err) {
+            console.error('deletePostProduct', err);
+            throw err;
+        }
+    }
 
 
     // 상품 상세 조회(상품 아이디로 연결)
