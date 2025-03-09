@@ -43,6 +43,11 @@ class ProductRoutes {
         // GET /api/products/:id
         this.router.get('/:id', this.productController.getDetailedProduct.bind(this.productController));
 
+        // 상품 삭제 라우트 추가
+        this.router.delete('/:id', 
+            this.authMiddleware.authenticateToken.bind(this.authMiddleware), 
+            this.productController.deleteProduct.bind(this.productController)
+        );
     }
 }
 

@@ -20,7 +20,7 @@ class UserRoutes {
         // this.router.post('/logout', this.userController.logout.bind(this.userController));
         this.router.post('/logout', this.authMiddleware.authenticateToken.bind(this.authMiddleware), this.userController.logout.bind(this.userController));
 
-
+        // api/users/auth 호출 시 현재 사용자 정보 반환
         this.router.get('/auth', this.authMiddleware.authenticateToken.bind(this.authMiddleware), (req, res) => {
             res.json({ user: req.user });
         });

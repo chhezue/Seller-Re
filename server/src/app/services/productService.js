@@ -101,7 +101,7 @@ class ProductService {
                 .limit(parseInt(limit))
                 .populate('region', 'level1 level2')
                 .populate('category', 'name')
-                .sort({ createdAt: -1 });
+                .sort({ updatedAt: -1, createdAt: -1 }); // updatedAt → createdAt 순으로 정렬
 
             // MongoDB 문서를 JSON으로 변환할 때 날짜를 ISO 문자열로 변환
             return products.map(product => {
@@ -228,7 +228,7 @@ class ProductService {
             const category = await Category.findById(product.category);
             const region = await Region.findById(product.region); console.log('Found region:', region);
             const favoriteCount = await Favorite.countDocuments({ productId: productId });
-            const seller = await User.findById(product.seller);
+            const seller = await User.findById(product.seller).populate('region');
 
             // 필요한 정보만 객체로 구성하여 반환
             return {
@@ -248,7 +248,8 @@ class ProductService {
                 seller: {
                     _id: seller._id,
                     username: seller.username,
-                    profileImage: seller.profileImage
+                    profileImage: seller.profileImage,
+                    region: seller.region ? `${seller.region.level1} ${seller.region.level2}` : null,
                 }
             };
         } catch (error) {
