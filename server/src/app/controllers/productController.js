@@ -184,6 +184,39 @@ class ProductController {
             res.status(500).json({message: "서버 오류", error: err.message});
         }
     }
+
+    // 상품 삭제
+    async deleteProduct(req, res) {
+        try {
+            const userId = req.user.id;
+            const productId = req.params.id;
+            
+            // 상품 존재 확인
+            const product = await this.productService.getDetailedProduct(productId);
+            
+            if (!product) {
+                return res.status(404).json({ message: "상품을 찾을 수 없습니다." });
+            }
+            
+            // 소유자 확인
+            let sellerId = typeof product.seller === 'object' ? product.seller._id : product.seller;
+            if (String(sellerId) !== String(userId)) {
+                return res.status(403).json({ message: "본인의 상품만 삭제할 수 있습니다." });
+            }
+            
+            const originalStatus = product.status;
+            const isDeleted = await this.productService.deletePostProduct(userId, productId, originalStatus);
+            
+            if (isDeleted) {
+                return res.status(200).json({ message: "상품이 성공적으로 삭제되었습니다." });
+            } else {
+                return res.status(404).json({ message: "삭제할 상품을 찾을 수 없습니다." });
+            }
+        } catch (err) {
+            console.error("상품 삭제 중 오류 발생:", err);
+            return res.status(500).json({ message: "서버 오류", error: err.message });
+        }
+    }
 }
 
 module.exports = {ProductController};
