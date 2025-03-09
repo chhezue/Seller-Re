@@ -4,6 +4,7 @@ const User = require('../app/models/user');
 const Region = require('../app/models/region');
 const Product = require('../app/models/product');
 const Category = require('../app/models/category');
+const History = require("../app/models/history");
 
 class MakeDummy {
     constructor() {
@@ -266,6 +267,45 @@ class MakeDummy {
         } finally { }
     }
 
+    async makeHistory() {
+        try {
+            const users = await User.find();
+            const products = await Product.find({ status: "판매완료" });
+
+            // 배열에서 랜덤 뽑기
+            const getRandomItem = (array) => array[Math.floor(Math.random() * array.length)];
+            const histories = [];
+
+            for (const product of products) {
+                const seller = product.seller; // 판매자
+                let buyer;
+                do {
+                    buyer = getRandomItem(users)._id; // 랜덤 유저
+                } while (buyer.equals(seller)); // 판매자와 중복되면 true이고 다시 do 실행
+                histories.push({
+                    product: product._id,
+                    seller: seller,
+                    buyer: buyer,
+                    price: product.price,
+                    transactionType: product.transactionType,
+                    completedAt: new Date(),
+                    region: product.region,
+                    feedback: Math.random() < 0.7 ? "좋은 거래였습니다!" : "괜찮은 거래였어요.",
+                    rating: Math.floor(Math.random() * 5) + 1,
+                });
+
+                // 데이터 넣기
+                if (histories.length > 0) {
+                    await History.insertMany(histories);
+                    console.log(`${histories.length} 개의 거래 내역 생성 성공`);
+                } else {
+                    console.log("생성할 거래 내역이 없습니다.");
+                }
+            }
+        } catch (err) {
+            console.error(`dummy history 생성 중 에러 발생: ${err}`);
+        }
+    }
 }
 
 module.exports = { MakeDummy };
