@@ -41,7 +41,7 @@ class MakeDummy {
             }
 
             const insertDummyUser = async () => {
-                const dummyUsers = generateDummyUser(50);
+                const dummyUsers = generateDummyUser(100);
                 const result = await User.insertMany(dummyUsers);
                 console.log(`${result.length} dummy user 생성 성공`);
             }
@@ -208,7 +208,7 @@ class MakeDummy {
             }
 
             const insertDummyProduct = async () => {
-                const dummyProducts = generateDummyProduct(50);
+                const dummyProducts = generateDummyProduct(100);
                 const result = await Product.insertMany(dummyProducts);
                 console.log(`${result.length} dummy Product 생성 성공`);
             }
@@ -251,7 +251,7 @@ class MakeDummy {
             };
 
             const insertDummyProductFile = async () => {
-                const dummyProductFiles = generateDummyProductFile(50);
+                const dummyProductFiles = generateDummyProductFile(100);
                 const result = await ProductFile.insertMany(dummyProductFiles);
                 console.log(`${result.length} dummy ProductFile 생성 성공`);
             };

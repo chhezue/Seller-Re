@@ -48,6 +48,13 @@ class ProductRoutes {
             this.authMiddleware.authenticateToken.bind(this.authMiddleware), 
             this.productController.deleteProduct.bind(this.productController)
         );
+
+        // 상품 수정 라우트 추가
+        // this.router.patch('/:id',
+        //     this.authMiddleware.authenticateToken.bind(this.authMiddleware),
+        //     this.uploadMiddleware.upload.array("images", 5),
+        //     this.productController.updateProduct.bind(this.productController)
+        // );
     }
 }
 
