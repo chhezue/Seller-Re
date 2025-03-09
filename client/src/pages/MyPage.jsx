@@ -6,7 +6,8 @@ export default function MyPage() {
     const [username, setUsername] = useState("");
     const [region, setRegion] = useState("");
     const [profileImage, setProfileImage] = useState("/profileImg-default.png");
-    const [products, setProducts] = useState([]);
+    const [mySales, setMySales] = useState([]);
+    const [myPurchases, setMyPurchases] = useState([]);
 
     const convertGoogleDriveUrl = (url) => {
         if (!url) return "/no-img.png";  // 파일 없으면 기본 이미지
@@ -41,7 +42,21 @@ export default function MyPage() {
             })
             if (!response.ok) throw new Error("판매 상품을 불러오는 데 실패했습니다.");
             const sales = await response.json();
-            setProducts(sales);
+            setMySales(sales);
+        } catch (error) {
+            console.error("판매 상품 조회 오류:", error);
+        }
+    }
+
+    const getPurchases = async () => {
+        try {
+            const accessToken = localStorage.getItem("accessToken");
+            const response = await fetch("http://localhost:9000/api/products/myPurchases", {
+                headers: { Authorization: `Bearer ${accessToken}`,}
+            })
+            if (!response.ok) throw new Error("구매 상품을 불러오는 데 실패했습니다.");
+            const purchases = await response.json();
+            setMyPurchases(purchases);
         } catch (error) {
             console.error("판매 상품 조회 오류:", error);
         }
@@ -60,23 +75,24 @@ export default function MyPage() {
                     <span className="text-gray-500">{region}</span>
                 </div>
             </div>
-
+            {/* 판매 내역 */}
             <div className="flex mt-6 space-x-6">
                 <div className="w-1/4 flex flex-col items-start">
                     <p className="text-lg font-semibold mb-2">판매 내역</p>
-                    {products.length > 6 && <button className="text-blue-600 hover:underline">더보기</button>}
+                    {mySales.length > 6 && <button className="text-blue-600 hover:underline">더보기</button>}
                 </div>
-
                 <div className="w-3/4 space-y-4">
-                    {products.length === 0 ? (
+                    {mySales.length === 0 ? (
                         <p className="text-center text-gray-500">판매 상품이 없습니다.</p>
                     ) : (
                         <ul className="space-y-4">
-                            {products.map((product) => (
-                                <li key={product._id} className="flex justify-between items-center bg-gray-100 p-4 rounded-lg shadow-md">
+                            {mySales.map((product) => (
+                                <li key={product._id}
+                                    className="flex justify-between items-center bg-gray-100 p-4 rounded-lg shadow-md">
                                     <div className="flex items-center cursor-pointer"
                                          onClick={() => handleClick(product._id)}>
-                                        <img src={convertGoogleDriveUrl(product.fileNames?.[0])} alt="상품이미지" className="w-24 h-24 rounded-md object-cover"/>
+                                        <img src={convertGoogleDriveUrl(product.fileNames?.[0])} alt="상품이미지"
+                                             className="w-24 h-24 rounded-md object-cover"/>
                                         <div className="ml-4 flex-1">
                                             <p className="text-gray-700 font-medium">{product.name}</p>
                                             <p className="text-xl leading-10 font-bold">
@@ -87,7 +103,43 @@ export default function MyPage() {
                                     </div>
                                     <button
                                         className="px-4 py-2 text-white font-bold rounded-lg bg-gray-700 hover:bg-gray-800">
-                                    {product.status === '판매중' ? '요청 보기' : '거래 완료'}
+                                        {product.status === '판매중' ? '요청 보기' : '거래 완료'}
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            </div>
+            {/* 구매 내역 */}
+            <div className="flex mt-6 space-x-6">
+                <div className="w-1/4 flex flex-col items-start">
+                    <p className="text-lg font-semibold mb-2">구매 내역</p>
+                    {myPurchases.length > 6 && <button className="text-blue-600 hover:underline">더보기</button>}
+                </div>
+                <div className="w-3/4 space-y-4">
+                    {myPurchases.length === 0 ? (
+                        <p className="text-center text-gray-500">구매 상품이 없습니다.</p>
+                    ) : (
+                        <ul className="space-y-4">
+                            {myPurchases.map((product) => (
+                                <li key={product._id}
+                                    className="flex justify-between items-center bg-gray-100 p-4 rounded-lg shadow-md">
+                                    <div className="flex items-center cursor-pointer"
+                                         onClick={() => handleClick(product._id)}>
+                                        <img src={convertGoogleDriveUrl(product.fileNames?.[0])} alt="상품이미지"
+                                             className="w-24 h-24 rounded-md object-cover"/>
+                                        <div className="ml-4 flex-1">
+                                            <p className="text-gray-700 font-medium">{product.name}</p>
+                                            <p className="text-xl leading-10 font-bold">
+                                                {product.transactionType === "판매" ? `${product.price} 원` : "무료 나눔"}
+                                            </p>
+                                            <p className="text-sm text-gray-500">{product.createdAt}</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        className="px-4 py-2 text-white font-bold rounded-lg bg-gray-700 hover:bg-gray-800">
+                                        {product.status === '판매중' ? '요청 보기' : '거래 완료'}
                                     </button>
                                 </li>
                             ))}

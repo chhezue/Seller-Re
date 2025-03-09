@@ -20,6 +20,7 @@ class SellerRe{
             makeDummy.makeUser();
             // makeDummy.makeRegion();
             makeDummy.makeProduct();
+            makeDummy.makeHistory();
         }
 
         try {

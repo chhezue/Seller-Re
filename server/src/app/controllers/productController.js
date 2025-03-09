@@ -177,6 +177,19 @@ class ProductController {
         try {
             const userId = req.user.id;
             const products = await this.productService.fetchUserSales(userId);
+            // console.log("products: ", products)
+            res.status(200).json(products);
+        } catch (err) {
+            console.error("판매 상품 조회 오류", err);
+            res.status(500).json({message: "서버 오류", error: err.message});
+        }
+    }
+
+    // 로그인된 회원 구매 상품 조회
+    async getUserPurchases(req, res) {
+        try {
+            const userId = req.user.id;
+            const products = await this.productService.fetchUserPurchases(userId);
             console.log("products: ", products)
             res.status(200).json(products);
         } catch (err) {
