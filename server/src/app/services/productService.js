@@ -3,6 +3,7 @@ const Product = require("../models/Product");
 const Region = require("../models/Region");
 const Favorite = require("../models/Favorite");
 const User = require("../models/User");
+const History = require("../models/History");
 
 class ProductService {
     constructor() {
@@ -271,6 +272,19 @@ class ProductService {
         } catch (err) {
             console.error("판매 상품 조회 오류", err);
             throw new Error("판매 상품을 불러오는 중 오류가 발생했습니다.");
+        }
+    }
+
+    // 구매 상품 조회
+    async fetchUserPurchases(userId) {
+        try {
+            const productIds = await History.distinct("product", { buyer: userId });
+            return await Product.find({ _id: { $in: productIds } })
+                .populate("category", "name")
+                .populate("region", "level2");
+        } catch (err) {
+            console.error("구매 상품 조회 오류", err);
+            throw new Error("구매 상품을 불러오는 중 오류가 발생했습니다.");
         }
     }
 }
