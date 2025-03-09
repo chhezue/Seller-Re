@@ -41,7 +41,9 @@ export default function MyPage() {
             })
             if (!response.ok) throw new Error("판매 상품을 불러오는 데 실패했습니다.");
             const sales = await response.json();
-            setProducts(sales);
+            // status가 '삭제'가 아닌 상품만 필터링
+            const filteredSales = sales.filter(product => product.status !== '삭제');
+            setProducts(filteredSales);
         } catch (error) {
             console.error("판매 상품 조회 오류:", error);
         }

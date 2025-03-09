@@ -72,9 +72,10 @@ export default function ProductListPage() {
                 console.log("더이상 로드할 상품이 없습니다.");
             } else {
                 console.log("로드된 상품:", data.products);
-                setProducts(prevProducts => 
-                    page === 1 ? data.products : [...prevProducts, ...data.products]
-                );
+                const filteredNewProducts = data.products.filter(product => product.status !== '삭제');
+                setProducts(prevProducts => {
+                    return page === 1 ? filteredNewProducts : [...prevProducts, ...filteredNewProducts];
+                });
             }
         } catch (error) {
             console.error("상품 불러오기 실패:", error);

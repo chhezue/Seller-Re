@@ -7,6 +7,7 @@ import MyPage from "./pages/MyPage";      // 마이 페이지 추가
 import ProductUploadPage from "./pages/products/ProductUploadPage";
 import ProductListPage from "./pages/products/ProductListPage";
 import ProductDetailPage from "./pages/products/ProductDetailPage";
+import ProductEditPage from "./pages/products/ProductEditPage";
 
 export default function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("accessToken"));
@@ -32,6 +33,7 @@ export default function App() {
                 <Route path="/product/upload" element={isLoggedIn ? <ProductUploadPage /> : <LoginPage />} />
                 <Route path="/products" element={<ProductListPage />} />
                 <Route path="/products/:id" element={<ProductDetailPage />} />
+                <Route path="/products/edit/:id" element={isLoggedIn ? <ProductEditPage /> : <LoginPage />} />
             </Routes>
         </Router>
     );

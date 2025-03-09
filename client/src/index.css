@@ -4,14 +4,30 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, 
+    'Nanum Square', 'Poppins', 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.015em;
+  word-break: keep-all;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* 폰트 클래스 추가 */
+.font-pretendard {
+  font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
+}
+
+.font-nanum {
+  font-family: 'Nanum Square', sans-serif;
+}
+
+.font-poppins {
+  font-family: 'Poppins', sans-serif;
 }
