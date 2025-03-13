@@ -30,14 +30,18 @@ class App {
     setRoutes() {
         const userRoutes = new UserRoutes();
         const productRoutes = new ProductRoutes();
-        //test code. react
+
+        // 테스트를 위한 API 엔드포인트 코드 시작('/api/test' 경로로 GET 요청이 들어오면 아래 함수 실행)
         this.app.get('/api/test', (req, res) => {
             console.log('GET /api/test');
+
+            // 클라이언트에게 JSON 형식의 응답을 보냄(서버가 정상적으로 작동하는지 확인)
             res.send(JSON.stringify({
                 "test": "OK",
             }))
         });
-        //End test code. react
+        // 테스트를 위한 API 엔드포인트 코드 끝
+
         this.app.use('/api/users', userRoutes.router);
         this.app.use('/api/products', productRoutes.router);
     }
@@ -46,13 +50,12 @@ class App {
         // 주소: localhost:9000/api-docs
         this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
     }
-    
+
     listen(port) {
         this.app.listen(port, () => {
             console.log(`Server listening on port ${port}`);
         });
     }
-
 }
 
 module.exports = {App};

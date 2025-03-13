@@ -13,7 +13,6 @@ class ProductRoutes {
     }
 
     initializeRoutes() {
-        // Public routes
         /**
          * @route   GET /api/products/regions
          * @desc    지역 정보 목록 조회
@@ -41,16 +40,6 @@ class ProductRoutes {
             this.productController.getProducts.bind(this.productController)
         );
 
-        /**
-         * @route   GET /api/products/:id
-         * @desc    특정 상품 상세 정보 조회
-         * @access  Public
-         */
-        this.router.get('/:id',
-            this.productController.getDetailedProduct.bind(this.productController)
-        );
-
-        // Protected routes (인증 필요)
         /**
          * @route   GET /api/products/temp
          * @desc    임시저장된 상품 글 조회
@@ -103,14 +92,35 @@ class ProductRoutes {
         );
 
         /**
+         * @route   GET /api/products/:id
+         * @desc    특정 상품 상세 정보 조회
+         * @access  Public
+         */
+        this.router.get('/:id',
+            this.productController.getDetailedProduct.bind(this.productController)
+        );
+
+        /**
          * @route   DELETE /api/products/:id
-         * @desc    특정 상품 삭제
+         * @desc    로그인한 사용자의 특정 상품 삭제
          * @access  Private
          */
         this.router.delete('/:id',
             this.authMiddleware.authenticateToken.bind(this.authMiddleware),
             this.productController.deleteProduct.bind(this.productController)
         );
+
+        /**
+         * @route   PUT /api/products/:id
+         * @desc    로그인한 사용자의 특정 상품 수정
+         * @access  Private
+         */
+        this.router.put('/:id',
+            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
+            this.productController.postProduct.bind(this.productController)
+        );
+        // upsert 함수는 전체 리소스를 업데이트하므로 PUT 방식이 더 적절함.
+        // PATCH: 부분 업데이트, PUT: 전체 업데이트
     }
 }
 

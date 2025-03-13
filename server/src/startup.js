@@ -13,14 +13,15 @@ class SellerRe{
     }
 
     startSellerRe() {
+        // 더미 데이터 생성 옵션
         if (process.argv.includes("--makedummy")){
             console.log('make dummy');
-            // throw new Error('error!');
+
             const makeDummy = new MakeDummy();
             makeDummy.makeUser();
-            // makeDummy.makeRegion();
             makeDummy.makeProduct();
             makeDummy.makeHistory();
+            // makeDummy.makeRegion();
         }
 
         try {

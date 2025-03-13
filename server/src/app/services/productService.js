@@ -6,20 +6,21 @@ const User = require("../models/User");
 const History = require("../models/History");
 
 class ProductService {
-    constructor() {
+    constructor() {}
 
-    }
-
+    // 모든 카테고리 조회
     async fetchAllCategories() {
         // console.log(await Category.find());
         return await Category.find();
     }
 
+    // 모든 지역 조회
     async fetchAllRegions() {
         // console.log(await Region.find());
         return await Region.find();
     }
 
+    // 상품을 업데이트하거나 해당 상품이 없으면 새로 생성
     async updateOrCreateProduct(product) {
         console.log('addproduct ', product);
         // const {productId,_id, ...productData} = product;
@@ -65,6 +66,82 @@ class ProductService {
         //     console.log(`existingProduct.updatedFileUrls : ${updatedFileUrls}`);
         // }
         return await Product.findOneAndUpdate(filter, {...productData, fileUrls: updatedFileUrls}, options);
+    }
+
+    // 사용자의 임시 저장된 상품 조회
+    async getTempPostProductByUserId(userId) {
+        try {
+            const product = await Product.findOne({
+                seller: (userId),
+                writeStatus: "임시저장",
+                status: "임시저장",
+                // $or: [
+                //     {DEL_YN: {$exists: false}}, // DEL_YN 필드가 존재하지 않는 경우
+                //     {DEL_YN: "N"} // DEL_YN이 "N"인 경우
+                // ]
+            }).sort({createdAt: -1});
+
+            if (!product) {
+                return null;
+            }
+
+            const category = await Category.findById(product.category).exec();
+            const region = await Region.findById(product.region).exec();
+
+            return {
+                _id: product._id,
+                name: product.name,
+                category: category ? category.name : null,  // category.name으로 변환
+                transactionType: product.transactionType,
+                description: product.description,
+                status: product.status,
+                writeStatus: product.writeStatus,
+                region: region ? region.name : null,  // region.name으로 변환
+                price: product.price,
+                fileUrls: product.fileUrls,
+                fileNames: product.fileNames,
+                createdAt: product.createdAt,
+            };
+
+        } catch (err) {
+            console.error('쿼리 실행 중 오류 발생:', err); // 에러 발생 시 처리
+            throw err; // 에러를 다시 던져서 호출한 곳에서 처리
+        }
+    }
+
+    // 상품 삭제(상태 변경 방식)
+    async deletePostProduct(userId, postId, originalStatus) {
+        try {
+            // //1. 완전삭제
+            // const resultHardDelete = await Product.deleteOne({
+            //     seller: userId,
+            //     _id: postId,
+            // });
+            // // deldteCount === 0 : false. 삭제할 데이터가 없음
+            // return (resultHardDelete.deletedCount !== 0);
+
+            // //2. 삭제 플래그 변경
+            // const resultSoftDelete = await Product.updateOne({
+            //     seller: userId,
+            //     _id: postId,
+            // }, {
+            //     $set: {DEL_YN: "Y"}
+            // });
+            // // matchedCount === 0 : false. 수정할 데이터가 없음
+
+            // 2. 삭제 플래그 방법 변경
+            const resultSoftDelete = await Product.updateOne({
+                seller: userId,
+                _id: postId,
+                status: originalStatus
+            }, {
+                $set: {status: "삭제"}
+            })
+            return (resultSoftDelete.matchedCount !== 0);
+        } catch (err) {
+            console.error('deletePostProduct', err);
+            throw err;
+        }
     }
 
     // 모든 상품 목록 조회
@@ -125,92 +202,6 @@ class ProductService {
         }
     }
 
-
-    // 에러 발생. mongoose.Types.ObjectId(userId) 에서 lock이 걸려버림
-    // async getTempPostProductByUserId(userId) {
-    //     return await Product.findOne({
-    //         seller: mongoose.Types.ObjectId(userId),
-    //         writeStatus: "임시저장",
-    //         // DEL_YN 이 N 이거나, DEL_YN 필드 자체가 존재하지 않는경우 조회
-    //         $or: [{DEL_YN: "N"}, {DEL_YN: {$exists: false}}],
-    //     });
-    // }
-    async getTempPostProductByUserId(userId) {
-        try {
-            const product = await Product.findOne({
-                seller: (userId),
-                writeStatus: "임시저장",
-                status: "임시저장",
-                // $or: [
-                //     {DEL_YN: {$exists: false}}, // DEL_YN 필드가 존재하지 않는 경우
-                //     {DEL_YN: "N"} // DEL_YN이 "N"인 경우
-                // ]
-            }).sort({createdAt: -1});
-
-            if (!product) {
-                return null;
-            }
-
-            const category = await Category.findById(product.category).exec();
-            const region = await Region.findById(product.region).exec();
-
-            return {
-                _id: product._id,
-                name: product.name,
-                category: category ? category.name : null,  // category.name으로 변환
-                transactionType: product.transactionType,
-                description: product.description,
-                status: product.status,
-                writeStatus: product.writeStatus,
-                region: region ? region.name : null,  // region.name으로 변환
-                price: product.price,
-                fileUrls: product.fileUrls,
-                fileNames: product.fileNames,
-                createdAt: product.createdAt,
-            };
-
-        } catch (err) {
-            console.error('쿼리 실행 중 오류 발생:', err); // 에러 발생 시 처리
-            throw err; // 에러를 다시 던져서 호출한 곳에서 처리
-        }
-    }
-
-
-    async deletePostProduct(userId, postId, originalStatus) {
-        try {
-            // //1. 완전삭제
-            // const resultHardDelete = await Product.deleteOne({
-            //     seller: userId,
-            //     _id: postId,
-            // });
-            // // deldteCount === 0 : false. 삭제할 데이터가 없음
-            // return (resultHardDelete.deletedCount !== 0);
-
-            // //2. 삭제 플래그 변경
-            // const resultSoftDelete = await Product.updateOne({
-            //     seller: userId,
-            //     _id: postId,
-            // }, {
-            //     $set: {DEL_YN: "Y"}
-            // });
-            // // matchedCount === 0 : false. 수정할 데이터가 없음
-
-            // 2. 삭제 플래그 방법 변경
-            const resultSoftDelete = await Product.updateOne({
-                seller: userId,
-                _id: postId,
-                status: originalStatus
-            }, {
-                $set: {status: "삭제"}
-            })
-            return (resultSoftDelete.matchedCount !== 0);
-        } catch (err) {
-            console.error('deletePostProduct', err);
-            throw err;
-        }
-    }
-
-
     // 상품 상세 조회(상품 아이디로 연결)
     // 수정 필요: 거래 희망 장소, 파일 이미지 업로드
     async getDetailedProduct(productId) {
@@ -220,7 +211,7 @@ class ProductService {
             // product 데이터 조회
             const product = await Product.findOne({ _id: productId });
             console.log('Found product:', product);
-            
+
             if (!product) {
                 throw new Error('상품을 찾을 수 없습니다.');
             }
@@ -258,8 +249,7 @@ class ProductService {
         }
     }
 
-
-    // 판매 상품 조회
+    // 사용자의 판매 상품 조회
     async fetchUserSales(userId) {
         try {
             const filter = {
@@ -275,7 +265,7 @@ class ProductService {
         }
     }
 
-    // 구매 상품 조회
+    // 사용자의 구매 상품 조회
     async fetchUserPurchases(userId) {
         try {
             const productIds = await History.distinct("product", { buyer: userId });
@@ -289,4 +279,4 @@ class ProductService {
     }
 }
 
-module.exports = {ProductService};
+module.exports = { ProductService };

@@ -8,7 +8,7 @@ class ProductController {
         this.googleDriveService = new GoogleDriveService();
     }
     
-    // 카테고리 가져오기
+    // 전체 카테고리 목록을 조회
     async getCategories(req, res) {
         try {
             const categories = await this.productService.fetchAllCategories();
@@ -19,7 +19,7 @@ class ProductController {
         }
     }
 
-    // 지역 가져오기
+    // 전체 지역 목록을 조회
     async getRegions(req, res) {
         console.log('getRegions');
         try {
@@ -31,6 +31,7 @@ class ProductController {
         }
     }
 
+    // 상품 등록 + 수정 + 이미지 업로드
     async postProduct(req, res, next) {
         console.log('postProduct ');
 
@@ -101,7 +102,7 @@ class ProductController {
         }
     }
 
-    // 상품 목록 가져오기
+    // 필터링된 상품 목록 페이지네이션 조회
     async getProducts(req, res, next) {
         console.log('getProducts ');
 
@@ -120,6 +121,7 @@ class ProductController {
         }
     }
 
+    // 임시저장 상품 조회
     async getTempPostProduct(req, res) {
         try {
             const userId = req.user.id;
@@ -137,7 +139,7 @@ class ProductController {
         }
     }
 
-    //임시 저장글 삭제
+    // 임시저장 상품 삭제
     async deleteTempPostProduct(req, res) {
         try {
             const userId = req.user.id;
@@ -160,7 +162,7 @@ class ProductController {
         }
     }
 
-    // 상품 상세 가져오기
+    // 상품 상세 정보 조회
     async getDetailedProduct(req, res, next) {
         console.log('getDetailedProduct ');
 
@@ -172,7 +174,7 @@ class ProductController {
         }
     }
 
-    // 로그인된 회원 판매 상품 조회
+    // 사용자의 판매 상품 목록 조회
     async getUserSales(req, res) {
         try {
             const userId = req.user.id;
@@ -185,7 +187,7 @@ class ProductController {
         }
     }
 
-    // 로그인된 회원 구매 상품 조회
+    // 사용자의 구매 상품 목록 조회
     async getUserPurchases(req, res) {
         try {
             const userId = req.user.id;
@@ -201,7 +203,7 @@ class ProductController {
     // 상품 삭제
     async deleteProduct(req, res) {
         try {
-            const userId = req.user.id;
+            const userId = req.user.id; // JWT 토큰에서 디코딩된 사용자 정보
             const productId = req.params.id;
             
             // 상품 존재 확인
