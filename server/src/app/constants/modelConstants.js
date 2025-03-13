@@ -1,3 +1,4 @@
+const category = require("express/lib/view");
 const CATEGORY_TYPES = [
     { id: 1, name: '디지털기기' },
     { id: 2, name: '생활가전' },
@@ -20,8 +21,15 @@ const CATEGORY_TYPES = [
     { id: 19, name: '기타 중고물품' },
 ];
 
-const getCategoryById = (id) => CATEGORY_TYPES.find((cat) => cat.id === id)?.name || null;
-const getCategoryByName = (name) => CATEGORY_TYPES.find((cat) => cat.name === name)?.id || null;
+const getCategoryById = (id) => {
+    const category = CATEGORY_TYPES.find((cat) => cat.id === id);
+    return category ? category.name : null;
+}
+
+const getCategoryByName = (name) => {
+    const id = CATEGORY_TYPES.find((cat) => cat.name === name)
+    return id ? category.id : null;
+}
 
 module.exports = {
     CATEGORY_TYPES,

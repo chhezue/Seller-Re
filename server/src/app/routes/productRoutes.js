@@ -13,50 +13,105 @@ class ProductRoutes {
     }
 
     initializeRoutes() {
-        // 지역 정보 가져오기를 상단으로 이동
-        this.router.get('/regions', this.productController.getRegions.bind(this.productController));
-        
-        // 카테고리 정보 받아오기
-        this.router.get('/categories', this.productController.getCategories.bind(this.productController));
-        
-        // 상품 목록 출력
-        // GET /api/products/
-        this.router.get('/', this.productController.getProducts.bind(this.productController));
-
-        //게시판 글쓰기 전 임시저장글 확인
-        this.router.get('/temp', this.authMiddleware.authenticateToken.bind(this.authMiddleware), this.productController.getTempPostProduct.bind(this.productController));
-        // this.router.get('/temp', this.productController.getTempPostProduct.bind(this.productController));
-        //임시저장글 삭제
-        this.router.delete('/temp', this.authMiddleware.authenticateToken.bind(this.authMiddleware), this.productController.deleteTempPostProduct.bind(this.productController));
-
-        //게시판 글쓰기
-        // this.router.post('/', this.authMiddleware.authenticateToken.bind(this.authMiddleware), this.productController.postProduct.bind(this.productController));
-        this.router.post('/', this.authMiddleware.authenticateToken.bind(this.authMiddleware), this.uploadMiddleware.upload.array("images", 5), this.productController.postProduct.bind(this.productController));
-
-        // 로그인된 회원 판매 상품 조회
-        this.router.get('/mySales', this.authMiddleware.authenticateToken.bind(this.authMiddleware), this.productController.getUserSales.bind(this.productController))
-
-        // 로그인된 회원 구매 상품 조회
-        this.router.get('/myPurchases', this.authMiddleware.authenticateToken.bind(this.authMiddleware), this.productController.getUserPurchases.bind(this.productController))
-
-        // 상품 상세 정보 조회
-        // GET /api/products/:id
-        this.router.get('/:id', this.productController.getDetailedProduct.bind(this.productController));
-
-        // 상품 삭제 라우트 추가
-        this.router.delete('/:id', 
-            this.authMiddleware.authenticateToken.bind(this.authMiddleware), 
-            this.productController.deleteProduct.bind(this.productController)
+        // Public routes
+        /**
+         * @route   GET /api/products/regions
+         * @desc    지역 정보 목록 조회
+         * @access  Public
+         */
+        this.router.get('/regions',
+            this.productController.getRegions.bind(this.productController)
         );
 
-        // 상품 수정 라우트 추가
-        // this.router.patch('/:id',
-        //     this.authMiddleware.authenticateToken.bind(this.authMiddleware),
-        //     this.uploadMiddleware.upload.array("images", 5),
-        //     this.productController.updateProduct.bind(this.productController)
-        // );
+        /**
+         * @route   GET /api/products/categories
+         * @desc    카테고리 목록 조회
+         * @access  Public
+         */
+        this.router.get('/categories',
+            this.productController.getCategories.bind(this.productController)
+        );
+
+        /**
+         * @route   GET /api/products
+         * @desc    전체 상품 목록 조회
+         * @access  Public
+         */
+        this.router.get('/',
+            this.productController.getProducts.bind(this.productController)
+        );
+
+        /**
+         * @route   GET /api/products/:id
+         * @desc    특정 상품 상세 정보 조회
+         * @access  Public
+         */
+        this.router.get('/:id',
+            this.productController.getDetailedProduct.bind(this.productController)
+        );
+
+        // Protected routes (인증 필요)
+        /**
+         * @route   GET /api/products/temp
+         * @desc    임시저장된 상품 글 조회
+         * @access  Private
+         */
+        this.router.get('/temp',
+            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
+            this.productController.getTempPostProduct.bind(this.productController)
+        );
+
+        /**
+         * @route   DELETE /api/products/temp
+         * @desc    임시저장된 상품 글 삭제
+         * @access  Private
+         */
+        this.router.delete('/temp',
+            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
+            this.productController.deleteTempPostProduct.bind(this.productController)
+        );
+
+        /**
+         * @route   POST /api/products
+         * @desc    새로운 상품 등록 (최대 5개 이미지 업로드 가능)
+         * @access  Private
+         */
+        this.router.post('/',
+            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
+            this.uploadMiddleware.upload.array("images", 5),
+            this.productController.postProduct.bind(this.productController)
+        );
+
+        /**
+         * @route   GET /api/products/mySales
+         * @desc    로그인한 사용자의 판매 상품 목록 조회
+         * @access  Private
+         */
+        this.router.get('/mySales',
+            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
+            this.productController.getUserSales.bind(this.productController)
+        );
+
+        /**
+         * @route   GET /api/products/myPurchases
+         * @desc    로그인한 사용자의 구매 상품 목록 조회
+         * @access  Private
+         */
+        this.router.get('/myPurchases',
+            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
+            this.productController.getUserPurchases.bind(this.productController)
+        );
+
+        /**
+         * @route   DELETE /api/products/:id
+         * @desc    특정 상품 삭제
+         * @access  Private
+         */
+        this.router.delete('/:id',
+            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
+            this.productController.deleteProduct.bind(this.productController)
+        );
     }
 }
-
 
 module.exports = { ProductRoutes };
