@@ -21,51 +21,77 @@ class ProductService {
     }
 
     // 상품을 업데이트하거나 해당 상품이 없으면 새로 생성
-    async updateOrCreateProduct(product) {
-        console.log('addproduct ', product);
-        // const {productId,_id, ...productData} = product;
-        const {_id: productId, fileUrls, ...productData} = product;
-        console.log('updateOrCreateProduct. productId', productId);
-        console.log('updateOrCreateProduct. productData', productData);
+    // async updateOrCreateProduct(product) {
+    //     console.log('addproduct ', product);
+    //     // const {productId,_id, ...productData} = product;
+    //     const {_id: productId, fileUrls, ...productData} = product;
+    //     console.log('updateOrCreateProduct. productId', productId);
+    //     console.log('updateOrCreateProduct. productData', productData);
+    //
+    //     const filter = productId ? {_id: productId} : {};    // _id가 있으면 해당 문서 찾기, 없으면 새 문서 생성
+    //     const options = {upsert: true, newProduct: true}  // upsert 활성화, new -> 업데이트된 문서 반환
+    //
+    //     let existingProduct = null;
+    //
+    //     if (productId) {
+    //         existingProduct = await Product.findById(productId);
+    //         console.log('existingProduct', existingProduct);
+    //     }
+    //
+    //     let updatedFileUrls = fileUrls || [];
+    //
+    //     if (existingProduct) {
+    //         const baseDriveUrl = "https://drive.google.com/uc?id=";
+    //
+    //         // deletedImage 에는 id만 들어오기에 링크를 추가해야함.
+    //         const deletedFileUrls = product.deletedImages.map(id => `${baseDriveUrl}${id}`);
+    //
+    //         // 기존 파일 중 삭제할 파일을 제외한 파일 + 새로 추가된 파일만 남김
+    //         updatedFileUrls = [
+    //             ...existingProduct.fileUrls.filter(url => !deletedFileUrls.includes(url)),
+    //             ...fileUrls // 새 파일 추가
+    //         ];
+    //     }
+    //
+    //     // if (existingProduct) {
+    //     //     // 삭제할 파일들
+    //     //     const deletedFileUrls = existingProduct.fileUrls.filter(url => product.deletedImages.includes(url));
+    //     //     console.log(`existingProduct.deletedFileUrls : ${deletedFileUrls}`);
+    //     //
+    //     //     // 기존 파일 중 삭제할 파일을 제외한 파일 + 새로 추가된 파일만 남김
+    //     //     updatedFileUrls = [
+    //     //         ...existingProduct.fileUrls.filter(url => !deletedFileUrls.includes(url)),
+    //     //         ...fileUrls // 새 파일 추가
+    //     //     ];
+    //     //     console.log(`existingProduct.updatedFileUrls : ${updatedFileUrls}`);
+    //     // }
+    //     return await Product.findOneAndUpdate(filter, {...productData, fileUrls: updatedFileUrls}, options);
+    // }
 
-        const filter = productId ? {_id: productId} : {};    // _id가 있으면 해당 문서 찾기, 없으면 새 문서 생성
-        const options = {upsert: true, newProduct: true}  // upsert 활성화, new -> 업데이트된 문서 반환
+    // 상품을 업데이트하거나 해당 상품이 없으면 새로 생성
+    async updateOrCreateProduct(productId, productData) {
+        const { fileUrls, deletedImages, ...updateData } = productData;
 
-        let existingProduct = null;
-
-        if (productId) {
-            existingProduct = await Product.findById(productId);
-            console.log('existingProduct', existingProduct);
-        }
+        const filter = productId ? { _id: productId } : {}; // 기존 상품이 있으면 업데이트, 없으면 생성
+        const options = { upsert: true, new: true };
 
         let updatedFileUrls = fileUrls || [];
 
-        if (existingProduct) {
-            const baseDriveUrl = "https://drive.google.com/uc?id=";
+        if (productId) {
+            const existingProduct = await Product.findById(productId);
+            if (existingProduct) {
+                const baseDriveUrl = "https://drive.google.com/uc?id=";
+                const deletedFileUrls = (deletedImages || []).map(id => `${baseDriveUrl}${id}`);
 
-            // deletedImage 에는 id만 들어오기에 링크를 추가해야함.
-            const deletedFileUrls = product.deletedImages.map(id => `${baseDriveUrl}${id}`);
-
-            // 기존 파일 중 삭제할 파일을 제외한 파일 + 새로 추가된 파일만 남김
-            updatedFileUrls = [
-                ...existingProduct.fileUrls.filter(url => !deletedFileUrls.includes(url)),
-                ...fileUrls // 새 파일 추가
-            ];
+                // 기존 파일 중 삭제된 파일을 제외하고, 새로운 파일 추가
+                updatedFileUrls = [
+                    ...existingProduct.fileUrls.filter(url => !deletedFileUrls.includes(url)),
+                    ...fileUrls
+                ];
+            }
         }
 
-        // if (existingProduct) {
-        //     // 삭제할 파일들
-        //     const deletedFileUrls = existingProduct.fileUrls.filter(url => product.deletedImages.includes(url));
-        //     console.log(`existingProduct.deletedFileUrls : ${deletedFileUrls}`);
-        //
-        //     // 기존 파일 중 삭제할 파일을 제외한 파일 + 새로 추가된 파일만 남김
-        //     updatedFileUrls = [
-        //         ...existingProduct.fileUrls.filter(url => !deletedFileUrls.includes(url)),
-        //         ...fileUrls // 새 파일 추가
-        //     ];
-        //     console.log(`existingProduct.updatedFileUrls : ${updatedFileUrls}`);
-        // }
-        return await Product.findOneAndUpdate(filter, {...productData, fileUrls: updatedFileUrls}, options);
+        return await Product.findOneAndUpdate(filter, { ...updateData, fileUrls: updatedFileUrls }, options);
     }
 
     // 사용자의 임시 저장된 상품 조회
@@ -203,36 +229,36 @@ class ProductService {
     }
 
     // 상품 상세 조회(상품 아이디로 연결)
-    // 수정 필요: 거래 희망 장소, 파일 이미지 업로드
     async getDetailedProduct(productId) {
-        console.log('[getDetailedProduct], productId:', productId);
-
         try {
-            // product 데이터 조회
-            const product = await Product.findOne({ _id: productId });
-            console.log('Found product:', product);
-
+            const product = await Product.findOne({ _id: productId, status: '판매중' });
             if (!product) {
-                throw new Error('상품을 찾을 수 없습니다.');
+                return null; // 에러 대신 null 반환
             }
 
-            const category = await Category.findById(product.category);
-            const region = await Region.findById(product.region); console.log('Found region:', region);
-            const favoriteCount = await Favorite.countDocuments({ productId: productId });
-            const seller = await User.findById(product.seller).populate('region');
+            const [category, region, favoriteCount, seller] = await Promise.all([
+                Category.findById(product.category),
+                Region.findById(product.region),
+                Favorite.countDocuments({ productId: productId }),
+                User.findById(product.seller).populate('region')
+            ]);
 
-            // 필요한 정보만 객체로 구성하여 반환
+            if (!seller) {
+                throw new Error('판매자 정보를 찾을 수 없습니다.');
+            }
+
             return {
-                _id: product._id, // 상품 id
-                name: product.name, // 상품 이름
-                category: category ? category.name : null, // category.name으로 반환
-                transactionType: product.transactionType, // 거래 유형(판매, 나눔)
-                description: product.description, // 상품 설명
-                status: product.status, // 상품 상태(판매중, 판매완료, 임시저장)
+                _id: product._id,
+                name: product.name,
+                category: category?.name || null,
+                transactionType: product.transactionType,
+                description: product.description,
+                status: product.status,
                 writeStatus: product.writeStatus,
-                region: region ? `${region.level1} ${region.level2}` : null, // region.name으로 변환
+                region: region ? `${region.level1} ${region.level2}` : null,
                 price: product.price,
                 fileUrls: product.fileUrls,
+                fileNames: product.fileNames,
                 createdAt: product.createdAt,
                 updatedAt: product.updatedAt,
                 favoriteCount: favoriteCount,

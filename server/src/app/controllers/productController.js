@@ -1,11 +1,13 @@
 const {ProductService} = require('../services/productService');
 const {GoogleDriveService} = require('../../utils/googleDriveService');
+const {FileService} = require('../services/fileService');
 const fs = require("node:fs");
 
 class ProductController {
     constructor() {
         this.productService = new ProductService();
         this.googleDriveService = new GoogleDriveService();
+        this.fileService = new FileService();
     }
     
     // 전체 카테고리 목록을 조회
@@ -32,73 +34,110 @@ class ProductController {
     }
 
     // 상품 등록 + 수정 + 이미지 업로드
-    async postProduct(req, res, next) {
-        console.log('postProduct ');
+    // async postProduct(req, res, next) {
+    //     console.log('postProduct ');
+    //
+    //     try {
+    //         const {productName, tradeType, price, description, category, isTemporary, region, productId} = req.body;
+    //         const uploadTime = +new Date();
+    //         const userId = req.user.id;
+    //         const uploadFiles = [];
+    //         let imageUrls = [];
+    //         let deletedImages = [];
+    //
+    //         // 삭제된 이미지 처리
+    //         if (req.body.deletedImages) {
+    //             // const deletedImages = JSON.parse(req.body.deletedImages);
+    //             deletedImages = JSON.parse(req.body.deletedImages);
+    //             console.log('DELETE 1 : ', deletedImages);
+    //             if (deletedImages.length > 0) {
+    //                 try {
+    //                     await this.googleDriveService.deleteFile(deletedImages, process.env.GOOGLE_DRIVE_PRODUCTS_IMAGE); // Google Drive에서 삭제
+    //                 } catch (error) {
+    //                     console.error(`이미지 삭제 실패: ${deletedImages}`, error);
+    //                 }
+    //             }
+    //         }
+    //
+    //         if (!req.files || req.files.length < 1) {
+    //             return res.status(400).json({error: '업로드 할 이미지가 없습니다.'});
+    //         }
+    //
+    //         // 파일 업로드
+    //         const uploadPromises = req.files.map(async (file) => {
+    //             try {
+    //                 const uploadFileName = userId + '-' + uploadTime + '-' + file.originalname;
+    //                 uploadFiles.push(uploadFileName);
+    //                 return await this.googleDriveService.uploadFile(file.path, uploadFileName, process.env.GOOGLE_DRIVE_PRODUCTS_IMAGE);
+    //             } catch (uploadError) {
+    //                 console.error(`파일 업로드 실패: ${file.filename}`, uploadError);
+    //                 throw new Error('파일 업로드 중 오류가 발생했습니다.');
+    //             } finally {
+    //                 fs.unlinkSync(file.path);
+    //             }
+    //         });
+    //
+    //         // 업로드된 이미지 URL들
+    //         imageUrls = await Promise.all(uploadPromises);
+    //
+    //         // 상품 등록
+    //         const newProduct = await this.productService.updateOrCreateProduct({
+    //             _id: productId,
+    //             fileUrls: imageUrls,
+    //             name: productName,
+    //             price,
+    //             description,
+    //             category,
+    //             seller: userId,
+    //             writeStatus: isTemporary ? '임시저장' : '등록',
+    //             transactionType: (tradeType === 'sale' ? '판매' : '나눔'),
+    //             status: isTemporary ? '임시저장' : '판매중',
+    //             region, //
+    //             fileNames: uploadFiles,
+    //             deletedImages,
+    //         });
+    //
+    //         return res.status(201).json({message: '상품 등록 성공', product: newProduct});
+    //
+    //     } catch (err) {
+    //         next(err); // 글로벌 에러 핸들러로 전달
+    //     }
+    // }
 
+    // 상품 등록
+    async createProduct(req, res, next) {
         try {
-            const {productName, tradeType, price, description, category, isTemporary, region, productId} = req.body;
-            const uploadTime = +new Date();
             const userId = req.user.id;
-            const uploadFiles = [];
-            let imageUrls = [];
-            let deletedImages = [];
+            const productData = req.body;
 
-            // 삭제된 이미지 처리
-            if (req.body.deletedImages) {
-                // const deletedImages = JSON.parse(req.body.deletedImages);
-                deletedImages = JSON.parse(req.body.deletedImages);
-                console.log('DELETE 1 : ', deletedImages);
-                if (deletedImages.length > 0) {
-                    try {
-                        await this.googleDriveService.deleteFile(deletedImages, process.env.GOOGLE_DRIVE_PRODUCTS_IMAGE); // Google Drive에서 삭제
-                    } catch (error) {
-                        console.error(`이미지 삭제 실패: ${deletedImages}`, error);
-                    }
-                }
-            }
+            // 이미지 업로드 처리
+            const { imageUrls } = await this.fileService.handleProductImages(req);
 
-            if (!req.files || req.files.length < 1) {
-                return res.status(400).json({error: '업로드 할 이미지가 없습니다.'});
-            }
+            // 상품 생성 (upsert 사용)
+            const newProduct = await this.productService.updateOrCreateProduct(null, { ...productData, fileUrls: imageUrls, seller: userId });
 
-            // 파일 업로드
-            const uploadPromises = req.files.map(async (file) => {
-                try {
-                    const uploadFileName = userId + '-' + uploadTime + '-' + file.originalname;
-                    uploadFiles.push(uploadFileName);
-                    return await this.googleDriveService.uploadFile(file.path, uploadFileName, process.env.GOOGLE_DRIVE_PRODUCTS_IMAGE);
-                } catch (uploadError) {
-                    console.error(`파일 업로드 실패: ${file.filename}`, uploadError);
-                    throw new Error('파일 업로드 중 오류가 발생했습니다.');
-                } finally {
-                    fs.unlinkSync(file.path);
-                }
-            });
-
-            // 업로드된 이미지 URL들
-            imageUrls = await Promise.all(uploadPromises);
-
-            // 상품 등록
-            const newProduct = await this.productService.updateOrCreateProduct({
-                _id: productId,
-                fileUrls: imageUrls,
-                name: productName,
-                price,
-                description,
-                category,
-                seller: userId,
-                writeStatus: isTemporary ? '임시저장' : '등록',
-                transactionType: (tradeType === 'sale' ? '판매' : '나눔'),
-                status: isTemporary ? '임시저장' : '판매중',
-                region, //
-                fileNames: uploadFiles,
-                deletedImages,
-            });
-
-            return res.status(201).json({message: '상품 등록 성공', product: newProduct});
-
+            return res.status(201).json({ message: '상품 등록 성공', product: newProduct });
         } catch (err) {
-            next(err); // 글로벌 에러 핸들러로 전달
+            next(err);
+        }
+    }
+
+    // 상품 수정
+    async updateProduct(req, res, next) {
+        try {
+            const userId = req.user.id;
+            const productId = req.params.id;
+            const productData = req.body;
+
+            // 이미지 업로드 및 삭제 처리
+            const { imageUrls, deletedImages } = await this.fileService.handleProductImages(req);
+
+            // 상품 수정 (upsert 사용)
+            const updatedProduct = await this.productService.updateOrCreateProduct(productId, { ...productData, fileUrls: imageUrls, deletedImages, seller: userId });
+
+            return res.status(200).json({ message: '상품 수정 성공', product: updatedProduct });
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -167,8 +206,14 @@ class ProductController {
         console.log('getDetailedProduct ');
 
         try {
-            const detailedProduct = await this.productService.getDetailedProduct(req.params.id);
-            return res.status(200).json({message: '상품 상세 조회 성공', detailedProduct: detailedProduct});
+            const productId = req.params.id;
+            const product = await this.productService.getDetailedProduct(productId);
+            
+            if (!product) {
+                return res.status(404).json({message: '상품을 찾을 수 없습니다.'});
+            }
+            
+            return res.status(200).json({message: '상품 상세 조회 성공', detailedProduct: product});
         } catch (err) {
             next(err); // 글로벌 에러 핸들러로 전달
         }

@@ -12,6 +12,9 @@ class ProductRoutes {
         this.initializeRoutes();
     }
 
+    // authMiddleware: 인증이 필요한 경우
+    // uploadMiddleware: 파일 업로드가 필요한 경우
+
     initializeRoutes() {
         /**
          * @route   GET /api/products/regions
@@ -68,7 +71,7 @@ class ProductRoutes {
         this.router.post('/',
             this.authMiddleware.authenticateToken.bind(this.authMiddleware),
             this.uploadMiddleware.upload.array("images", 5),
-            this.productController.postProduct.bind(this.productController)
+            this.productController.createProduct.bind(this.productController)
         );
 
         /**
@@ -117,7 +120,8 @@ class ProductRoutes {
          */
         this.router.put('/:id',
             this.authMiddleware.authenticateToken.bind(this.authMiddleware),
-            this.productController.postProduct.bind(this.productController)
+            this.uploadMiddleware.upload.array("images", 5),
+            this.productController.updateProduct.bind(this.productController)
         );
         // upsert 함수는 전체 리소스를 업데이트하므로 PUT 방식이 더 적절함.
         // PATCH: 부분 업데이트, PUT: 전체 업데이트
