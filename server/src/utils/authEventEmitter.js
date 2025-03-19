@@ -5,6 +5,7 @@ class AuthEventEmitter extends EventEmitter {
     constructor() {
         super();
         this.on('tokenError', this.logTokenError.bind(this));
+        this.on('tokenExpired', this.logTokenExpired.bind(this));
     }
 
     logTokenError(data) {

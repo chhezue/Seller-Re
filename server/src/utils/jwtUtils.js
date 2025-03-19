@@ -1,5 +1,28 @@
 const jwt = require('jsonwebtoken');
 
+/**
+ * [JWT utility]
+ *
+ * 역할:
+ * - 액세스 토큰 생성 (generateAccessToken 메서드)
+ *   - 사용자 ID와 이름을 포함한 토큰 발급
+ *   - JWT_SECRET 환경 변수로 서명
+ *   - JWT_EXPIRES_IN 환경 변수로 만료 시간 설정
+ *
+ * - 리프레시 토큰 생성 (generateRefreshToken 메서드)
+ *   - 사용자 ID와 이름을 포함한 토큰 발급
+ *   - JWT_REFRESH 환경 변수로 서명
+ *   - JWT_REFRESH_EXPIRES_IN 환경 변수로 더 긴 만료 시간 설정
+ *
+ * - 액세스 토큰 검증 (verifyAccessToken 메서드)
+ *   - JWT_SECRET으로 서명된 토큰 유효성 검증
+ *   - 검증 성공 시 토큰의 페이로드 반환
+ *
+ * - 리프레시 토큰 검증 (verifyRefreshToken 메서드)
+ *   - JWT_REFRESH로 서명된 토큰 유효성 검증
+ *   - 검증 성공 시 토큰의 페이로드 반환
+ */
+
 class JwtUtils {
     constructor() {
         this.jwt = jwt;
