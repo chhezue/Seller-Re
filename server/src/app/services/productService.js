@@ -4,7 +4,7 @@ const Region = require("../models/Region");
 const Favorite = require("../models/Favorite");
 const User = require("../models/User");
 const History = require("../models/History");
-const { PRODUCT_STATUS, WRITE_STATUS } = require('../constants/productConstants');
+const { PRODUCT_STATUS, WRITE_STATUS, GOOGLE_DRIVE } = require('../constants/productConstants');
 
 class ProductService {
     constructor() {}
@@ -81,8 +81,7 @@ class ProductService {
         if (productId) {
             const existingProduct = await Product.findById(productId);
             if (existingProduct) {
-                const baseDriveUrl = "https://drive.google.com/uc?id=";
-                const deletedFileUrls = (deletedImages || []).map(id => `${baseDriveUrl}${id}`);
+                const deletedFileUrls = (deletedImages || []).map(id => `${GOOGLE_DRIVE.BASE_URL}${id}`);
 
                 // 기존 파일 중 삭제된 파일을 제외하고, 새로운 파일 추가
                 updatedFileUrls = [
@@ -158,7 +157,7 @@ class ProductService {
                 _id: postId,
                 status: originalStatus
             }, {
-                $set: {status: "삭제"}
+                $set: {status: PRODUCT_STATUS.DELETED}
             })
             return (resultSoftDelete.matchedCount !== 0);
         } catch (err) {

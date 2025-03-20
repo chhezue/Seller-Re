@@ -106,7 +106,7 @@ export default function ProductUploadPage() {
     // 임시 글 데이터 로드 함수
     const loadTempProduct = (data) => {
                     setProductName(data.name);
-                    setTradeType(data.transactionType === "판매" ? "sale" : "free");
+                    setTradeType(data.tradeType === "판매" ? "sale" : "free");
                     setPrice(data.price);
                     setDescription(data.description);
                     setProductId(data._id);

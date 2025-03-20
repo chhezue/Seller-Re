@@ -25,7 +25,7 @@ const productSwagger = {
                                         "_id": { "type": "string", "example": "67b818f54285db274d3a5f44" },
                                         "name": { "type": "string", "example": "product8" },
                                         "category": { "type": "string", "example": "67ae0366d140723332602dbb" },
-                                        "transactionType": { "type": "string", "example": "나눔" },
+                                        "tradeType": { "type": "string", "example": "나눔" },
                                         "description": { "type": "string", "example": "abc" },
                                         "updatedAt": { "type": "string", "nullable": true, "example": null },
                                         "deletedAt": { "type": "string", "nullable": true, "example": null },

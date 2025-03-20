@@ -47,7 +47,7 @@ export default function ProductCard({ product, refCallback }) {
             <h3 className="text-lg font-semibold truncate mb-1" title={product.name}>{product.name}</h3>
             <div className="flex flex-col gap-1">
                 <div className="flex items-center justify-between">
-                    {product.transactionType === '나눔' ? (
+                    {product.tradeType === '나눔' ? (
                         <p className="text-sm text-blue-600 font-semibold px-2.5 py-0.5 bg-blue-100 rounded-full">나눔</p>
                     ) : (
                         <p className="text-sm font-medium px-2.5 py-0.5">{product.price?.toLocaleString()}원</p>

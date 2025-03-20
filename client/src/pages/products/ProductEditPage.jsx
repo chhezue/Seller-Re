@@ -91,7 +91,7 @@
 //
 //             // 상품 정보 설정
 //             setProductName(data.name || "");
-//             setTradeType(data.transactionType === "판매" ? "sale" : "free");
+//             setTradeType(data.tradeType === "판매" ? "sale" : "free");
 //             setPrice(data.price || "");
 //             setDescription(data.description || "");
 //
@@ -261,7 +261,7 @@
 //         if (selectedCategory !== (categories.find(c => c.name === originalData.category)?._id))
 //         formData.append("category", selectedCategory);
 //
-//         const originalTradeType = originalData.transactionType === "판매" ? "sale" : "free";
+//         const originalTradeType = originalData.tradeType === "판매" ? "sale" : "free";
 //         if (tradeType !== originalTradeType)
 //         formData.append("tradeType", tradeType);
 //

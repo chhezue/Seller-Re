@@ -149,7 +149,7 @@ class ProductController {
         // 유저는 필터 조건을 보내지 않을 수도 있으므로(전체 조회) req.params가 아닌 req.query 사용
         // 요청 URL: seller_re_backend/posts?level1=경기도&level2=인천&category=도서
         const { level1, level2, category, tradeType, page = 1, limit = 20 } = req.query;
-        console.log('level1: ', level1, '\tlevel2: ', level2, '\tcategory: ', category, '\ttransactionType: ', tradeType);
+        console.log('level1: ', level1, '\tlevel2: ', level2, '\tcategory: ', category, '\ttradeType: ', tradeType);
 
         try {
             const skip = (page - 1) * limit;

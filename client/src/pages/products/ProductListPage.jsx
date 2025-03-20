@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import ProductCard from "../../components/ProductCard";
 
 export default function ProductListPage() {
-    const navigate = useNavigate();
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [regions, setRegions] = useState([]);
@@ -59,7 +58,7 @@ export default function ProductListPage() {
                 ...(selectedCategory && { category: selectedCategory }),
                 ...(selectedRegion && { level1: selectedRegion }),
                 ...(selectedSubRegion && { level2: selectedSubRegion }),
-                ...(onlyFree && { transactionType: '나눔' }),
+                ...(onlyFree && { tradeType: '나눔' }),
                 page: page.toString(),
                 limit: '20',
             });

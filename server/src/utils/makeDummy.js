@@ -1,10 +1,11 @@
 // const mongoose = require('mongoose');
 // const connectDB = require('../config/mongoose');
-const User = require('../app/models/user');
-const Region = require('../app/models/region');
-const Product = require('../app/models/product');
-const Category = require('../app/models/category');
-const History = require("../app/models/history");
+const User = require('../app/models/User');
+const Region = require('../app/models/Region');
+const Product = require('../app/models/Product');
+const Category = require('../app/models/Category');
+const History = require("../app/models/History");
+const { TRADE_TYPES, PRODUCT_STATUS, WRITE_STATUS } = require('../app/constants/productConstants');
 
 class MakeDummy {
     constructor() {
@@ -167,10 +168,10 @@ class MakeDummy {
                 const users = await User.find();
                 const categories = await Category.find();
                 console.log('categories11', categories);
-                return { users, categories }; // 두 데이터를 함께 반환
+                return { users, categories };
             };
 
-            const { users, categories } = await fetchData(); // fetchData 호출
+            const { users, categories } = await fetchData();
 
             const generateDummyProduct = (count) => {
                 const products = [];
@@ -181,24 +182,23 @@ class MakeDummy {
                     console.log('category', category);
 
                     const createdAt = Date.now() + (9 * 60 * 60 * 1000);
-                    const updatedAt = createdAt; // 초기에는 등록일 == 수정일로 설정
-                    const deletedAt = null;
+                    const updatedAt = createdAt;
 
                     if (updatedAt < createdAt) {
                         throw new Error('수정일은 등록일보다 이전일 수 없습니다.');
                     }
 
-                    const writeStatus = Math.random() < 0.5 ? '임시저장' : '등록';
+                    const writeStatus = Math.random() < 0.5 ? WRITE_STATUS.TEMPORARY : WRITE_STATUS.REGISTERED;
 
                     products.push({
                         name: `product${i + 1}`,
                         category: category._id,
-                        transactionType: Math.random() < 0.5 ? '판매' : '나눔',
+                        tradeType: Math.random() < 0.5 ? TRADE_TYPES.SALE : TRADE_TYPES.SHARE,
                         description: `abc`,
                         updatedAt: null,
                         deletedAt: null,
                         seller: user._id,
-                        status: writeStatus === '임시저장' ? '임시저장' : (Math.random() < 0.5 ? '판매중' : '판매완료'),
+                        status: writeStatus === WRITE_STATUS.TEMPORARY ? PRODUCT_STATUS.TEMPORARY : (Math.random() < 0.5 ? PRODUCT_STATUS.ON_SALE : PRODUCT_STATUS.SOLD),
                         writeStatus: writeStatus,
                         region: user.region,
                         price: 1000
@@ -270,7 +270,7 @@ class MakeDummy {
     async makeHistory() {
         try {
             const users = await User.find();
-            const products = await Product.find({ status: "판매완료" });
+            const products = await Product.find({ status: PRODUCT_STATUS.SOLD });
 
             // 배열에서 랜덤 뽑기
             const getRandomItem = (array) => array[Math.floor(Math.random() * array.length)];
@@ -287,7 +287,6 @@ class MakeDummy {
                     seller: seller,
                     buyer: buyer,
                     price: product.price,
-                    transactionType: product.transactionType,
                     completedAt: new Date(),
                     region: product.region,
                     feedback: Math.random() < 0.7 ? "좋은 거래였습니다!" : "괜찮은 거래였어요.",
