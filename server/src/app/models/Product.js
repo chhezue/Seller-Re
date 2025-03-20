@@ -1,20 +1,15 @@
 const mongoose = require("mongoose");
+const { TRANSACTION_TYPES, PRODUCT_STATUS, WRITE_STATUS } = require('../constants/productConstants');
 
-/**
- * 상품 모델
- * 
- * 판매 또는 나눔할 상품 정보를 저장하는 모델입니다.
- * 상품명, 카테고리, 거래 유형, 가격, 판매자 정보 등을 포함합니다.
- */
 const ProductSchema = new mongoose.Schema({
     name: { type: String, required: true }, // 상품명
-    category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true }, // 카테고리 참조
-    transactionType: {
+    category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
+    tradeType: {
         type: String,
         required: true,
-        enum: ['판매', '나눔'] // 거래 유형: 판매 또는 나눔
+        enum: Object.values(TRANSACTION_TYPES)
     },
-    description: String, // 상품 설명
+    description: String,
     createdAt: { type: Date, default: () => Date.now() + (9 * 60 * 60 * 1000) }, // 상품 등록 시간 (한국 시간)
     updatedAt: Date, // 상품 정보 수정 시간
     deletedAt: Date, // 상품 삭제 시간 (소프트 삭제)
@@ -22,15 +17,15 @@ const ProductSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-        enum: ['판매중', '판매완료', '임시저장', '삭제'] // 상품 상태
+        enum: Object.values(PRODUCT_STATUS)
     },
     writeStatus: {
         type: String,
         required: true,
-        enum: ['임시저장', '등록'] // 글 작성 상태
+        enum: Object.values(WRITE_STATUS)
     },
-    region: { type: mongoose.Schema.Types.ObjectId, ref: 'Region' }, // 판매 지역
-    price : {type: Number, default: 0}, // 상품 가격
+    region: { type: mongoose.Schema.Types.ObjectId, ref: 'Region' },
+    price : {type: Number, default: 0},
     fileUrls: { type: [String], default: [] }, // 상품 이미지 URL 배열
     fileNames: { type: [String], default: [] }, // 상품 이미지 파일명 배열
 },{
