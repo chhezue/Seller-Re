@@ -4,6 +4,7 @@ const Region = require("../models/Region");
 const Favorite = require("../models/Favorite");
 const User = require("../models/User");
 const History = require("../models/History");
+const { PRODUCT_STATUS, WRITE_STATUS } = require('../constants/productConstants');
 
 class ProductService {
     constructor() {}
@@ -99,12 +100,8 @@ class ProductService {
         try {
             const product = await Product.findOne({
                 seller: (userId),
-                writeStatus: "임시저장",
-                status: "임시저장",
-                // $or: [
-                //     {DEL_YN: {$exists: false}}, // DEL_YN 필드가 존재하지 않는 경우
-                //     {DEL_YN: "N"} // DEL_YN이 "N"인 경우
-                // ]
+                writeStatus: WRITE_STATUS.TEMPORARY,
+                status: PRODUCT_STATUS.TEMPORARY,
             }).sort({createdAt: -1});
 
             if (!product) {
@@ -118,7 +115,7 @@ class ProductService {
                 _id: product._id,
                 name: product.name,
                 category: category ? category.name : null,  // category.name으로 변환
-                transactionType: product.transactionType,
+                tradeType: product.tradeType,
                 description: product.description,
                 status: product.status,
                 writeStatus: product.writeStatus,
@@ -171,9 +168,9 @@ class ProductService {
     }
 
     // 모든 상품 목록 조회
-    async getProducts(level1, level2, category, transactionType, skip, limit) {
+    async getProducts(level1, level2, category, tradeType, skip, limit) {
         try {
-            let filter = { status: '판매중' };
+            let filter = { status: PRODUCT_STATUS.ON_SALE };
 
             // 1. level1, level2로 region_id 찾기
             if (level1 || level2) {
@@ -194,9 +191,9 @@ class ProductService {
                 filter.category = category;
             }
 
-            // 3. transactionType(나눔, 판매) 필터 추가
-            if (transactionType) {
-                filter.transactionType = transactionType;
+            // 3. tradeType(나눔, 판매) 필터 추가
+            if (tradeType) {
+                filter.tradeType = tradeType;
             }
 
             const products = await Product.find(filter)
@@ -214,10 +211,10 @@ class ProductService {
                     name: productObj.name,
                     price: productObj.price,
                     fileUrls: productObj.fileUrls,
-                    transactionType: productObj.transactionType,
+                    tradeType: productObj.tradeType,
                     region: productObj.region ? `${productObj.region.level1} ${productObj.region.level2}` : null,
-                    category: productObj.category?.name,
-                    createdAt: productObj.createdAt?.toISOString(),
+                    category: productObj.category.name,
+                    createdAt: productObj.createdAt.toISOString(),
                     updatedAt: productObj.updatedAt?.toISOString(),
                     favoriteCount: productObj.favoriteCount
                 };
@@ -231,7 +228,7 @@ class ProductService {
     // 상품 상세 조회(상품 아이디로 연결)
     async getDetailedProduct(productId) {
         try {
-            const product = await Product.findOne({ _id: productId, status: '판매중' });
+            const product = await Product.findOne({ _id: productId, status: PRODUCT_STATUS.ON_SALE });
             if (!product) {
                 return null; // 에러 대신 null 반환
             }
@@ -251,7 +248,7 @@ class ProductService {
                 _id: product._id,
                 name: product.name,
                 category: category?.name || null,
-                transactionType: product.transactionType,
+                tradeType: product.tradeType,
                 description: product.description,
                 status: product.status,
                 writeStatus: product.writeStatus,
@@ -281,7 +278,7 @@ class ProductService {
             const filter = {
                 seller: userId,
                 deletedAt: null,
-                writeStatus: '등록'
+                writeStatus: WRITE_STATUS.REGISTERED
             };
             return await Product.find(filter).populate("category", "name").populate("region", "level2");
 

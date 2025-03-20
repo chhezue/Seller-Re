@@ -1,7 +1,7 @@
 const {ProductService} = require('../services/productService');
 const {GoogleDriveService} = require('../../utils/googleDriveService');
 const {FileService} = require('../services/fileService');
-const fs = require("node:fs");
+const { PRODUCT_STATUS } = require('../constants/productConstants');
 
 class ProductController {
     constructor() {
@@ -90,7 +90,7 @@ class ProductController {
     //             category,
     //             seller: userId,
     //             writeStatus: isTemporary ? '임시저장' : '등록',
-    //             transactionType: (tradeType === 'sale' ? '판매' : '나눔'),
+    //             tradeType: (tradeType === 'sale' ? '판매' : '나눔'),
     //             status: isTemporary ? '임시저장' : '판매중',
     //             region, //
     //             fileNames: uploadFiles,
@@ -148,13 +148,13 @@ class ProductController {
         // 필터 조건: 지역, 카테고리
         // 유저는 필터 조건을 보내지 않을 수도 있으므로(전체 조회) req.params가 아닌 req.query 사용
         // 요청 URL: seller_re_backend/posts?level1=경기도&level2=인천&category=도서
-        const { level1, level2, category, transactionType, page = 1, limit = 20 } = req.query;
-        console.log('level1: ', level1, '\tlevel2: ', level2, '\tcategory: ', category, '\ttransactionType: ', transactionType);
+        const { level1, level2, category, tradeType, page = 1, limit = 20 } = req.query;
+        console.log('level1: ', level1, '\tlevel2: ', level2, '\tcategory: ', category, '\ttransactionType: ', tradeType);
 
         try {
             const skip = (page - 1) * limit;
-            const products = await this.productService.getProducts(level1, level2, category, transactionType, skip, limit);
-            return res.status(201).json({ message: `${transactionType} 타입의 상품 목록 조회 성공`, products: products });
+            const products = await this.productService.getProducts(level1, level2, category, tradeType, skip, limit);
+            return res.status(201).json({ message: `${tradeType} 타입의 상품 목록 조회 성공`, products: products });
         } catch (err) {
             next(err); // 글로벌 에러 핸들러로 전달
         }
@@ -193,7 +193,7 @@ class ProductController {
                 await this.googleDriveService.deleteFile(tempPostProduct.fileUrls, process.env.GOOGLE_DRIVE_PRODUCTS_IMAGE);
             }
 
-            return await this.productService.deletePostProduct(userId, tempPostProduct._id, "임시저장") ?
+            return await this.productService.deletePostProduct(userId, tempPostProduct._id, PRODUCT_STATUS.TEMPORARY) ?
                 res.status(204) : res.status(404).json({message: "삭제할 데이터 없음"});
         } catch (err) {
             console.error(err);
