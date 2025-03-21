@@ -22,54 +22,6 @@ class ProductService {
     }
 
     // 상품을 업데이트하거나 해당 상품이 없으면 새로 생성
-    // async updateOrCreateProduct(product) {
-    //     console.log('addproduct ', product);
-    //     // const {productId,_id, ...productData} = product;
-    //     const {_id: productId, fileUrls, ...productData} = product;
-    //     console.log('updateOrCreateProduct. productId', productId);
-    //     console.log('updateOrCreateProduct. productData', productData);
-    //
-    //     const filter = productId ? {_id: productId} : {};    // _id가 있으면 해당 문서 찾기, 없으면 새 문서 생성
-    //     const options = {upsert: true, newProduct: true}  // upsert 활성화, new -> 업데이트된 문서 반환
-    //
-    //     let existingProduct = null;
-    //
-    //     if (productId) {
-    //         existingProduct = await Product.findById(productId);
-    //         console.log('existingProduct', existingProduct);
-    //     }
-    //
-    //     let updatedFileUrls = fileUrls || [];
-    //
-    //     if (existingProduct) {
-    //         const baseDriveUrl = "https://drive.google.com/uc?id=";
-    //
-    //         // deletedImage 에는 id만 들어오기에 링크를 추가해야함.
-    //         const deletedFileUrls = product.deletedImages.map(id => `${baseDriveUrl}${id}`);
-    //
-    //         // 기존 파일 중 삭제할 파일을 제외한 파일 + 새로 추가된 파일만 남김
-    //         updatedFileUrls = [
-    //             ...existingProduct.fileUrls.filter(url => !deletedFileUrls.includes(url)),
-    //             ...fileUrls // 새 파일 추가
-    //         ];
-    //     }
-    //
-    //     // if (existingProduct) {
-    //     //     // 삭제할 파일들
-    //     //     const deletedFileUrls = existingProduct.fileUrls.filter(url => product.deletedImages.includes(url));
-    //     //     console.log(`existingProduct.deletedFileUrls : ${deletedFileUrls}`);
-    //     //
-    //     //     // 기존 파일 중 삭제할 파일을 제외한 파일 + 새로 추가된 파일만 남김
-    //     //     updatedFileUrls = [
-    //     //         ...existingProduct.fileUrls.filter(url => !deletedFileUrls.includes(url)),
-    //     //         ...fileUrls // 새 파일 추가
-    //     //     ];
-    //     //     console.log(`existingProduct.updatedFileUrls : ${updatedFileUrls}`);
-    //     // }
-    //     return await Product.findOneAndUpdate(filter, {...productData, fileUrls: updatedFileUrls}, options);
-    // }
-
-    // 상품을 업데이트하거나 해당 상품이 없으면 새로 생성
     async updateOrCreateProduct(productId, productData) {
         const { fileUrls, deletedImages, ...updateData } = productData;
 
@@ -111,18 +63,18 @@ class ProductService {
             const region = await Region.findById(product.region).exec();
 
             return {
-                _id: product._id,
-                name: product.name,
-                category: category ? category.name : null,  // category.name으로 변환
-                tradeType: product.tradeType,
-                description: product.description,
-                status: product.status,
-                writeStatus: product.writeStatus,
-                region: region ? region.name : null,  // region.name으로 변환
-                price: product.price,
-                fileUrls: product.fileUrls,
-                fileNames: product.fileNames,
-                createdAt: product.createdAt,
+                _id: product?._id || null,
+                name: product?.name || null,
+                category: category?.name || null,
+                tradeType: product?.tradeType || null,
+                description: product?.description || null,
+                status: product?.status || null,
+                writeStatus: product?.writeStatus || null,
+                region: region ? `${region?.level1 || ''} ${region?.level2 || ''}` : null,
+                price: product?.price || null,
+                fileUrls: product?.fileUrls || [],
+                fileNames: product?.fileNames || [],
+                createdAt: product?.createdAt || null,
             };
 
         } catch (err) {
@@ -131,7 +83,7 @@ class ProductService {
         }
     }
 
-    // 상품 삭제(상태 변경 방식)
+    // 상품 삭제(삭제 플래그로 변경하는 방식)
     async deletePostProduct(userId, postId, originalStatus) {
         try {
             // //1. 완전삭제
@@ -166,9 +118,11 @@ class ProductService {
         }
     }
 
-    // 모든 상품 목록 조회
+    // 모든 상품 목록 & 필터링된 상품 목록 조회
     async getProducts(level1, level2, category, tradeType, skip, limit) {
         try {
+            // 필터링은 백엔드에서 처리하는 것이 더 효율적임
+            // 프론트에서 필터링한다면 모든 상품 데이터를 먼저 불러와야 함 -> 성능 문제 유발
             let filter = { status: PRODUCT_STATUS.ON_SALE };
 
             // 1. level1, level2로 region_id 찾기
@@ -177,9 +131,9 @@ class ProductService {
                 if (level1) regionFilter.level1 = level1;
                 if (level2) regionFilter.level2 = level2;
 
-                const regions = await Region.find(regionFilter); // findOne을 find로 변경
+                const regions = await Region.find(regionFilter);
                 if (regions && regions.length > 0) {
-                    filter.region = { $in: regions.map(r => r._id) }; // 여러 region_id를 포함하도록 수정
+                    filter.region = { $in: regions.map(r => r._id) };
                 } else {
                     return [];
                 }
@@ -200,22 +154,22 @@ class ProductService {
                 .limit(parseInt(limit))
                 .populate('region', 'level1 level2')
                 .populate('category', 'name')
-                .sort({ updatedAt: -1, createdAt: -1 }); // updatedAt → createdAt 순으로 정렬
+                .sort({ createdAt: -1 }); // 생성일 최신순으로 정렬
 
             // MongoDB 문서를 JSON으로 변환할 때 날짜를 ISO 문자열로 변환
             return products.map(product => {
                 const productObj = product.toObject(); // Mongoose 문서를 일반 객체로 변환
                 return {
-                    _id: productObj._id,
-                    name: productObj.name,
-                    price: productObj.price,
-                    fileUrls: productObj.fileUrls,
-                    tradeType: productObj.tradeType,
-                    region: productObj.region ? `${productObj.region.level1} ${productObj.region.level2}` : null,
-                    category: productObj.category.name,
-                    createdAt: productObj.createdAt.toISOString(),
-                    updatedAt: productObj.updatedAt?.toISOString(),
-                    favoriteCount: productObj.favoriteCount
+                    _id: productObj?._id || null,
+                    name: productObj?.name || null,
+                    tradeType: productObj?.tradeType || null,
+                    price: productObj?.price || null,
+                    fileUrls: productObj?.fileUrls || [],
+                    region: productObj?.region ? `${productObj.region?.level1 || ''} ${productObj.region?.level2 || ''}` : null,
+                    category: productObj?.category?.name || null,
+                    createdAt: productObj?.createdAt?.toISOString() || null,
+                    updatedAt: productObj?.updatedAt?.toISOString() || null,
+                    favoriteCount: productObj?.favoriteCount || 0
                 };
             });
         } catch (error) {
@@ -228,6 +182,7 @@ class ProductService {
     async getDetailedProduct(productId) {
         try {
             const product = await Product.findOne({ _id: productId, status: PRODUCT_STATUS.ON_SALE });
+
             if (!product) {
                 return null; // 에러 대신 null 반환
             }
@@ -244,25 +199,25 @@ class ProductService {
             }
 
             return {
-                _id: product._id,
-                name: product.name,
+                _id: product?._id || null,
+                name: product?.name || null,
                 category: category?.name || null,
-                tradeType: product.tradeType,
-                description: product.description,
-                status: product.status,
-                writeStatus: product.writeStatus,
-                region: region ? `${region.level1} ${region.level2}` : null,
-                price: product.price,
-                fileUrls: product.fileUrls,
-                fileNames: product.fileNames,
-                createdAt: product.createdAt,
-                updatedAt: product.updatedAt,
-                favoriteCount: favoriteCount,
+                tradeType: product?.tradeType || null,
+                description: product?.description || null,
+                createdAt: product?.createdAt || null,
+                updatedAt: product?.updatedAt || null,
+                status: product?.status || null,
+                writeStatus: product?.writeStatus || null,
+                region: region ? `${region?.level1 || ''} ${region?.level2 || ''}` : null,
+                price: product?.price || null,
+                fileUrls: product?.fileUrls || [],
+                fileNames: product?.fileNames || [],
+                favoriteCount: favoriteCount || 0,
                 seller: {
-                    _id: seller._id,
-                    username: seller.username,
-                    profileImage: seller.profileImage,
-                    region: seller.region ? `${seller.region.level1} ${seller.region.level2}` : null,
+                    _id: seller?._id || null,
+                    username: seller?.username || null,
+                    profileImage: seller?.profileImage || null,
+                    region: seller?.region ? `${seller.region?.level1 || ''} ${seller.region?.level2 || ''}` : null,
                 }
             };
         } catch (error) {
@@ -276,7 +231,7 @@ class ProductService {
         try {
             const filter = {
                 seller: userId,
-                deletedAt: null,
+                status: { $ne: PRODUCT_STATUS.DELETED },
                 writeStatus: WRITE_STATUS.REGISTERED
             };
             return await Product.find(filter).populate("category", "name").populate("region", "level2");
