@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import {useCallback, useEffect, useState} from "react";
+import {Link, useNavigate} from "react-router-dom";
 
 export default function Header() {
     const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem("accessToken"));
@@ -73,23 +73,24 @@ export default function Header() {
     };
 
     return (
-        <header className="border-b border-gray-300 p-4">
-            <div className="max-w-5xl mx-auto flex justify-between items-center">
+        <header className="bg-white border-b border-gray-200 shadow-sm">
+            <div className="max-w-6xl mx-auto flex justify-between items-center py-4 px-8">
                 {/* 로고 */}
-                <h1 className="text-xl font-bold cursor-pointer" onClick={() => navigate("/")}>
+                <h1 className="text-2xl font-bold text-primary-700 cursor-pointer hover:text-primary-500 transition-colors flex items-center" onClick={() => navigate("/")}>
+                    <img src="/logo.png" alt="Seller-RE 로고" className="h-10 mr-2" />
                     Seller-RE
                 </h1>
 
                 {/* 로그인 상태에 따른 UI 변경 */}
                 {isLoggedIn ? (
                     <div className="flex items-center space-x-4">
-                        <Link to="/my-page" className="flex items-center space-x-2">
-                            <img src={profileImage} alt="프로필이미지" className="w-8 h-8 rounded-full" />
-                            <span className="text-gray-700">{username}</span>
+                        <Link to="/my-page" className="flex items-center space-x-2 text-primary-600 hover:text-primary-500">
+                            <img src={profileImage} alt="프로필이미지" className="w-8 h-8 rounded-full border border-gray-200" />
+                            <span>{username}</span>
                         </Link>
                         <button
                             onClick={handleLogout}
-                            className="px-3 py-1 border border-gray-500 text-gray-700 rounded hover:bg-gray-100"
+                            className="px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 transition-colors shadow-sm"
                         >
                             로그아웃
                         </button>
@@ -97,7 +98,7 @@ export default function Header() {
                 ) : (
                     <button
                         onClick={() => navigate("/login")}
-                        className="px-3 py-1 border border-gray-500 text-gray-700 rounded hover:bg-gray-100"
+                        className="px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 transition-colors shadow-sm"
                     >
                         로그인
                     </button>

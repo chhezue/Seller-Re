@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import ProductCard from "../../components/ProductCard";
+import ProductFilter from "../../components/ProductFilter";
 
 export default function ProductListPage() {
     const [products, setProducts] = useState([]);
@@ -105,45 +106,21 @@ export default function ProductListPage() {
     return (
         <div className="max-w-6xl mx-auto p-8">
             <h2 className="text-3xl font-semibold mb-6">상품 목록</h2>
-            <div className="flex space-x-4 mb-6">
-                <select className="p-2 border rounded" value={selectedRegion} onChange={(e) => {
-                    setSelectedRegion(e.target.value);
-                    setSelectedSubRegion("");
-                }}>
-                    <option value="">지역 선택</option>
-                    {Array.from(new Set(regions.map(region => region.level1)))
-                        .map(level1 => (
-                            <option key={level1} value={level1}>{level1}</option>
-                        ))
-                    }
-                </select>
-                <select 
-                    className="p-2 border rounded" 
-                    value={selectedSubRegion} 
-                    onChange={(e) => setSelectedSubRegion(e.target.value)}
-                >
-                    <option value="">구/군 선택</option>
-                    {regions
-                        .filter(region => region.level1 === selectedRegion)
-                        .map(region => (
-                            <option key={region._id} value={region.level2}>
-                                {region.level2}
-                            </option>
-                        ))
-                    }
-                </select>
-                <select className="p-2 border rounded" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-                    <option value="">카테고리 선택</option>
-                    {categories.map(category => (
-                        <option key={category._id} value={category._id}>{category.name}</option>
-                    ))}
-                </select>
-                <label className="flex items-center">
-                    <input type="checkbox" checked={onlyFree} onChange={(e) => setOnlyFree(e.target.checked)} className="mr-2" />
-                    나눔만
-                </label>
-                <button onClick={resetFilters} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">초기화</button>
-            </div>
+            
+            <ProductFilter 
+                categories={categories}
+                regions={regions}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                selectedRegion={selectedRegion}
+                setSelectedRegion={setSelectedRegion}
+                selectedSubRegion={selectedSubRegion}
+                setSelectedSubRegion={setSelectedSubRegion}
+                onlyFree={onlyFree}
+                setOnlyFree={setOnlyFree}
+                resetFilters={resetFilters}
+            />
+            
             <div className="grid grid-cols-5 gap-4">
                 {products.map((product, index) => {
                     const refCallback = index === products.length - 1 ? lastProductElementRef : null;
