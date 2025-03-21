@@ -58,8 +58,10 @@ class AuthController {
     // 로그아웃 및 토큰 삭제
     async logout(req, res) {
         try {
-            res.clearCookie('refreshToken');
-            res.json({ message: 'Logged out successfully' });
+            const userId = req.user.id; // 인증 미들웨어의 페이로드에서 가져온 user ID
+            await this.authService.logout(userId); // db에 저장된 리프레시 토큰: 서비스 계층에서 삭제
+            res.clearCookie('refreshToken'); // 쿠키에 저장된 리프레시 토큰: 컨트롤러 계층에서 삭제
+            res.json({ message: '성공적으로 로그아웃되었습니다.' });
         } catch (error) {
             res.status(500).json({ message: error.message });
         }

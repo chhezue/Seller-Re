@@ -29,6 +29,8 @@ class AuthMiddleware {
         }
 
         try {
+            // 반환된 페이로드를 req.user에 삽입
+            // req.user: 서버에서 사용자 인증이 완료된 후 해당 사용자의 정보(페이로드)를 저장하는 부분
             req.user = this.jwtUtils.verifyAccessToken(token);
             next();
         } catch (error) {

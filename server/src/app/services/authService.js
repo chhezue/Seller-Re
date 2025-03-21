@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const { JwtUtils } = require('../../utils/JwtUtils');
+const { PasswordUtils } = require('../../utils/PasswordUtils');
 
 /**
  * [JWT service]
@@ -25,13 +26,16 @@ class AuthService {
     async login(userId, userPassword) {
         const user = await User.findOne({ 
             userid: userId, 
-            password: userPassword 
         }).populate('region', 'level2');
 
-        // TODO. bcrypt를 이용한 비밀번호 검증
-
         if (!user) {
-            throw new Error('Invalid credentials');
+            throw new Error('일치하는 사용자를 찾을 수 없습니다.');
+        }
+
+        // 비밀번호 검증
+        const isMatched = await PasswordUtils.verifyPassword(userPassword, user.password);
+        if (!isMatched) {
+            throw new Error('비밀번호가 일치하지 않습니다.');
         }
 
         const accessToken = this.jwtUtils.generateAccessToken(user);
@@ -67,6 +71,15 @@ class AuthService {
         }
 
         return this.jwtUtils.generateAccessToken(user);
+    }
+
+    // db에 저장된 리프레시 토큰 삭제
+    async logout(userId) {
+        await User.updateOne(
+            { _id: userId },
+            { $unset: { refreshToken: "" } }
+        );
+        return true;
     }
 }
 

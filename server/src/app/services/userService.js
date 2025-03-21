@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const { PasswordUtils } = require('../../utils/PasswordUtils');
 
 class UserService {
     constructor() { }
@@ -9,10 +10,15 @@ class UserService {
 
     async addUser(userData) {
         const existingUser = await User.findOne({userid: userData.id});
+
         if (existingUser) {
             console.log(`existingUser: ${existingUser}`);
             throw new Error(`User with id ${existingUser.id} already exists`);
         }
+
+        const hashedPassword = await PasswordUtils.hashPassword(userData.password);
+        userData.password = hashedPassword;
+
         const user = new User(userData);
         return await user.save();
     }
@@ -35,7 +41,6 @@ class UserService {
             throw error;
         }
     }
-
 }
 
 module.exports = { UserService };
