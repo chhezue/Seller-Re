@@ -49,7 +49,7 @@ class ProductRoutes {
          * @access  Private
          */
         this.router.get('/temp',
-            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
+            this.authMiddleware.verifyToken.bind(this.authMiddleware),
             this.productController.getTempPostProduct.bind(this.productController)
         );
 
@@ -59,7 +59,7 @@ class ProductRoutes {
          * @access  Private
          */
         this.router.delete('/temp',
-            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
+            this.authMiddleware.verifyToken.bind(this.authMiddleware),
             this.productController.deleteTempPostProduct.bind(this.productController)
         );
 
@@ -69,7 +69,7 @@ class ProductRoutes {
          * @access  Private
          */
         this.router.post('/',
-            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
+            this.authMiddleware.verifyToken.bind(this.authMiddleware),
             this.uploadMiddleware.upload.array("images", 5),
             this.productController.createProduct.bind(this.productController)
         );
@@ -80,7 +80,7 @@ class ProductRoutes {
          * @access  Private
          */
         this.router.get('/mySales',
-            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
+            this.authMiddleware.verifyToken.bind(this.authMiddleware),
             this.productController.getUserSales.bind(this.productController)
         );
 
@@ -90,7 +90,7 @@ class ProductRoutes {
          * @access  Private
          */
         this.router.get('/myPurchases',
-            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
+            this.authMiddleware.verifyToken.bind(this.authMiddleware),
             this.productController.getUserPurchases.bind(this.productController)
         );
 
@@ -109,7 +109,7 @@ class ProductRoutes {
          * @access  Private
          */
         this.router.delete('/:id',
-            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
+            this.authMiddleware.verifyToken.bind(this.authMiddleware),
             this.productController.deleteProduct.bind(this.productController)
         );
 
@@ -119,7 +119,7 @@ class ProductRoutes {
          * @access  Private
          */
         this.router.put('/:id',
-            this.authMiddleware.authenticateToken.bind(this.authMiddleware),
+            this.authMiddleware.verifyToken.bind(this.authMiddleware),
             this.uploadMiddleware.upload.array("images", 5),
             this.productController.updateProduct.bind(this.productController)
         );

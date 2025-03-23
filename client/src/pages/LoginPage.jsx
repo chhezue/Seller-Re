@@ -6,7 +6,7 @@ export default function LoginPage() {
 
     const loginRequest = async (userId, userPassword) => {
         try {
-            const response = await fetch("http://localhost:9000/api/users/login", {
+            const response = await fetch("http://localhost:9000/api/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ userId, userPassword }),
@@ -38,7 +38,7 @@ export default function LoginPage() {
     // 자동 로그인
     const handleAutoLogin = async () => {
         try {
-            const userResponse = await fetch("http://localhost:9000/api/users/randomUser");
+            const userResponse = await fetch("http://localhost:9000/api/auth/randomUser");
             const userData = await userResponse.json();
 
             if (!userData) {
