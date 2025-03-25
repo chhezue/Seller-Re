@@ -135,5 +135,3 @@ npm start
   ### 🙏 감사합니다!
   
   [![Star](https://img.shields.io/github/stars/Seller-Re/Seller-Re?style=social)](https://github.com/Seller-Re/Seller-Re)
-  
-</div>
