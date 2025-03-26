@@ -71,7 +71,7 @@
 │ │ │ │ ├── Product.js # 📦 상품 모델
 │ │ │ │ ├── ProductFile.js # 🖼️ 상품 관련 파일 모델
 │ │ │ │ ├── Region.js # 🗺️ 지역 정보 모델
-│ │ │ │ ├── TransactionRequest.js # 🤝 거래 요청 모델
+│ │ │ │ ├── TradeRequest.js # 🤝 거래 요청 모델
 │ │ │ │ └── User.js # 👤 사용자 모델
 │ │ │ ├── /routes # 🛣️ API 라우트 핸들러 - 엔드포인트 정의
 │ │ │ │ └── userRouter.js 
@@ -135,5 +135,3 @@ npm start
   ### 🙏 감사합니다!
   
   [![Star](https://img.shields.io/github/stars/Seller-Re/Seller-Re?style=social)](https://github.com/Seller-Re/Seller-Re)
-  
-</div>

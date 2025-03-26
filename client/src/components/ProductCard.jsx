@@ -33,26 +33,28 @@ export default function ProductCard({ product, refCallback }) {
 
     return (
         <div 
-            className="border p-4 rounded cursor-pointer hover:shadow-lg transition-shadow"
+            className="bg-white border border-gray-100 p-5 rounded-lg cursor-pointer hover:shadow-md transition-all duration-300 hover:border-primary-200"
             onClick={() => navigate(`/products/${product._id}`)}
             ref={refCallback}
         >
             {product.fileUrls && product.fileUrls.length > 0 && (
-                <img 
-                    src={convertGoogleDriveUrl(product.fileUrls[0])} 
-                    alt={product.name} 
-                    className="w-full h-32 object-cover mb-2 product-image" 
-                />
+                <div className="overflow-hidden rounded-lg mb-4">
+                    <img 
+                        src={convertGoogleDriveUrl(product.fileUrls[0])} 
+                        alt={product.name} 
+                        className="w-full h-40 object-cover transition-transform duration-300 hover:scale-105 product-image" 
+                    />
+                </div>
             )}
-            <h3 className="text-lg font-semibold truncate mb-1" title={product.name}>{product.name}</h3>
-            <div className="flex flex-col gap-1">
+            <h3 className="text-lg font-medium truncate mb-2 text-gray-800" title={product.name}>{product.name}</h3>
+            <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                    {product.transactionType === '나눔' ? (
-                        <p className="text-sm text-blue-600 font-semibold px-2.5 py-0.5 bg-blue-100 rounded-full">나눔</p>
+                    {product.tradeType === '나눔' ? (
+                        <p className="text-sm font-medium px-2.5 py-1 bg-primary-100 text-primary-700 rounded-full">나눔</p>
                     ) : (
-                        <p className="text-sm font-medium px-2.5 py-0.5">{product.price?.toLocaleString()}원</p>
+                        <p className="text-sm font-semibold text-gray-700">{product.price?.toLocaleString()}원</p>
                     )}
-                    <p className="text-sm text-gray-500 px-2.5 py-0.5 bg-gray-100 rounded-full flex items-center gap-1">
+                    <p className="text-sm text-gray-600 px-2.5 py-1 bg-gray-100 rounded-full flex items-center gap-1">
                         ❤️ <span>{product.favoriteCount ? product.favoriteCount : 0}</span>
                     </p>
                 </div>

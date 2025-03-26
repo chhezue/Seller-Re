@@ -5,7 +5,6 @@ import ImageSlider from "../../components/ImageSlider";
 export default function ProductDetailPage() {
     const { id } = useParams();
     const [product, setProduct] = useState(null);
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [currentUser, setCurrentUser] = useState(null);
 
     useEffect(() => {
@@ -100,12 +99,6 @@ export default function ProductDetailPage() {
             hour: '2-digit',
             minute: '2-digit',
         });
-    };
-
-    // 구글 드라이브 이미지 변환 함수
-    const convertGoogleDriveUrl = (url) => {
-        const match = url.match(/id=([^&]+)/);
-        return match ? `https://lh3.google.com/u/0/d/${match[1]}` : url;
     };
 
     // 상품 등록자와 현재 사용자가 동일한지 확인하는 변수
@@ -260,11 +253,11 @@ export default function ProductDetailPage() {
                                 </svg>
                             </button>
                             <span className="text-xl font-bold">
-                                {product.transactionType === '나눔' ? '무료 나눔' : `${product.price?.toLocaleString()}원`}
+                                {product.tradeType === '나눔' ? '무료 나눔' : `${product.price?.toLocaleString()}원`}
                             </span>
                         </div>
                         <button className="bg-gray-700 text-white px-6 py-2 rounded-md hover:bg-gray-600">
-                            {isOwner ? '요청 보기' : (product.transactionType === '나눔' ? '나눔받기' : '구매하기')}
+                            {isOwner ? '요청 보기' : (product.tradeType === '나눔' ? '나눔받기' : '구매하기')}
                         </button>
                     </div>
                 </div>

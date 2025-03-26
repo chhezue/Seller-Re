@@ -1,5 +1,7 @@
 import React, {useState, useRef, useEffect} from "react";
 import {useNavigate} from "react-router-dom";
+import ProductForm from "../../components/ProductForm";
+import ActionButtons from "../../components/ActionButtons";
 
 export default function ProductUploadPage() {
     const [productId, setProductId] = useState(null);
@@ -106,7 +108,7 @@ export default function ProductUploadPage() {
     // 임시 글 데이터 로드 함수
     const loadTempProduct = (data) => {
                     setProductName(data.name);
-                    setTradeType(data.transactionType === "판매" ? "sale" : "free");
+                    setTradeType(data.tradeType === "판매" ? "sale" : "free");
                     setPrice(data.price);
                     setDescription(data.description);
                     setProductId(data._id);
@@ -221,9 +223,7 @@ export default function ProductUploadPage() {
     };
 
     // 폼 제출 핸들러
-    const handleSubmit = async (e, isTemporary = false) => {
-        e.preventDefault();
-
+    const handleSubmit = async (isTemporary = false) => {
         // 유효성 검사
         if (!selectedCategory) {
             alert("카테고리를 선택해주세요.");
@@ -306,209 +306,37 @@ export default function ProductUploadPage() {
             <h2 className="text-3xl font-semibold mb-8 text-center">상품 등록</h2>
             
             <form className="space-y-8">
-                {/* 상품 기본 정보 섹션 */}
-                <section className="space-y-6">
-                    <h3 className="text-xl font-medium text-gray-800 pb-2 border-b">기본 정보</h3>
-
-            {/* 카테고리 선택 */}
-                    <div>
-            <label className="block text-gray-700 font-medium mb-2">카테고리 선택</label>
-            <select
-                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-            >
-                <option value="" disabled>카테고리를 선택해주세요</option>
-                {categories.length > 0 ? (
-                    categories.map((category) => (
-                        <option key={category._id} value={category._id}>{category.name}</option>
-                    ))
-                ) : (
-                    <option>카테고리 불러오는 중...</option>
-                )}
-            </select>
-                    </div>
-
-            {/* 상품명 입력 */}
-                    <div>
-            <label className="block text-gray-700 font-medium mb-2">상품명</label>
-            <input
-                type="text"
-                maxLength="40"
-                placeholder="상품명을 입력해주세요"
-                value={productName}
-                onChange={(e) => setProductName(e.target.value)}
-                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                        />
-                    </div>
-                </section>
-
-                {/* 거래 정보 섹션 */}
-                <section className="space-y-6">
-                    <h3 className="text-xl font-medium text-gray-800 pb-2 border-b">거래 정보</h3>
-
-            {/* 거래 방식 선택 */}
-                    <div>
-            <label className="block text-gray-700 font-medium mb-2">거래 방식</label>
-                        <div className="flex space-x-4">
-                            <button type="button" onClick={() => setTradeType("sale")}
-                                    className={`flex-1 py-3 rounded-lg text-lg font-medium transition-all ${tradeType === "sale" ? "bg-blue-500 text-white shadow-md" : "bg-gray-200 hover:bg-gray-300"}`}>판매하기
-                </button>
-                            <button type="button" onClick={() => setTradeType("free")}
-                                    className={`flex-1 py-3 rounded-lg text-lg font-medium transition-all ${tradeType === "free" ? "bg-blue-500 text-white shadow-md" : "bg-gray-200 hover:bg-gray-300"}`}>나눔하기
-                </button>
-                        </div>
-            </div>
-
-            {/* 가격 입력 */}
-            {tradeType === "sale" && (
-                        <div>
-                            <label className="block text-gray-700 font-medium mb-2">가격</label>
-                            <div className="relative">
-                    <input type="number" placeholder="가격을 입력해주세요" value={price}
-                           onChange={(e) => setPrice(e.target.value)}
-                                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-12 transition-all"/>
-                                <span className="absolute right-4 top-3 text-gray-500 text-lg">원</span>
-                            </div>
-                </div>
-            )}
-
-            {/* 지역 선택 */}
-                    <div>
-                        <label className="block text-gray-700 font-medium mb-2">거래 지역</label>
-                        <div className="p-5 bg-gray-50 rounded-lg border border-gray-200">
-                            <div className="mb-4">
-                                <label className="block text-gray-700 font-medium mb-2">시/도 선택:</label>
-                <select
-                    onChange={(e) => setSelectedLevel1(e.target.value)}
-                    value={selectedLevel1}
-                                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                >
-                    <option value="">선택하세요</option>
-                    {[...new Set(regions.map(region => region.level1))].map(level1 => (
-                        <option key={level1} value={level1}>{level1}</option>
-                    ))}
-                </select>
-                            </div>
-
-                {selectedLevel1 && (
-                                <div>
-                                    <label className="block text-gray-700 font-medium mb-2">구/군 선택:</label>
-                        <select
-                            onChange={(e) => setSelectedLevel2(e.target.value)}
-                            value={selectedLevel2}
-                                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                        >
-                            <option value="">선택하세요</option>
-                            {filteredLevel2.map(region => (
-                                <option key={region._id} value={region.level2}>{region.level2}</option>
-                            ))}
-                        </select>
-                    </div>
-                )}
-            </div>
-                    </div>
-                </section>
-
-                {/* 상품 설명 섹션 */}
-                <section className="space-y-6">
-                    <h3 className="text-xl font-medium text-gray-800 pb-2 border-b">상품 설명</h3>
-                    
-                    {/* 설명 입력 */}
-                    <div>
-                        <label className="block text-gray-700 font-medium mb-2">상품 설명</label>
-                        <textarea 
-                            maxLength="500" 
-                            placeholder="상품을 자세히 설명해주세요. 구매자에게 도움이 되는 정보를 포함하면 좋습니다."
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            className="w-full p-4 border rounded-lg h-40 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                        ></textarea>
-                        <p className="text-right text-sm text-gray-500 mt-1">{description.length}/500자</p>
-                    </div>
-                </section>
-
-                {/* 사진 업로드 섹션 */}
-                <section className="space-y-6">
-                    <h3 className="text-xl font-medium text-gray-800 pb-2 border-b">상품 이미지</h3>
-                    
-                    <div>
-                        <label className="block text-gray-700 font-medium mb-2">사진 업로드 (최대 5장)</label>
-                        <p className="text-sm text-gray-500 mb-3">상품 이미지를 등록해주세요. 드래그하여 한 번에 여러 이미지를 업로드할 수 있습니다.</p>
-                        <div
-                            className={`w-full h-56 border-2 border-dashed rounded-lg flex flex-wrap items-center justify-center cursor-pointer transition-all ${
-                                isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-blue-400"
-                }`}
-                onClick={() => fileInputRef.current.click()}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-            >
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={handleImageUpload}
+                <ProductForm 
+                    categories={categories}
+                    productName={productName}
+                    setProductName={setProductName}
+                    tradeType={tradeType}
+                    setTradeType={setTradeType}
+                    price={price}
+                    setPrice={setPrice}
+                    description={description}
+                    setDescription={setDescription}
+                    selectedCategory={selectedCategory}
+                    setSelectedCategory={setSelectedCategory}
+                    regions={regions}
+                    selectedLevel1={selectedLevel1}
+                    setSelectedLevel1={setSelectedLevel1}
+                    selectedLevel2={selectedLevel2}
+                    setSelectedLevel2={setSelectedLevel2}
+                    imagePreviews={imagePreviews}
+                    setImagePreviews={setImagePreviews}
+                    imageFiles={imageFiles}
+                    setImageFiles={setImageFiles}
+                    setDeletedImages={setDeletedImages}
                 />
 
-                {imagePreviews.length ? (
-                                <div className="flex flex-wrap justify-center gap-3 p-4 w-full">
-                                    {imagePreviews.map((src, index) => (
-                                        <div key={index} className="relative w-24 h-24">
-                            <img
-                                src={src}
-                                alt={`Uploaded ${index}`}
-                                                className="w-full h-full object-cover rounded-lg shadow-sm"
-                            />
-                            <button
-                                type="button"
-                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm shadow-md hover:bg-red-600 transition-colors"
-                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                    handleImageDelete(index);
-                                }}
-                            >
-                                ✕
-                            </button>
-                        </div>
-                                    ))}
-                                    {imagePreviews.length < 5 && (
-                                        <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400">
-                                            +
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="text-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                    </svg>
-                                    <p className="mt-2 text-gray-500">이미지를 업로드하세요</p>
-                                    <p className="text-sm text-gray-400">클릭하거나 이미지를 끌어다 놓으세요</p>
-                                </div>
-                )}
-            </div>
-                        <p className="text-right text-sm text-gray-500 mt-1">{imagePreviews.length}/5장</p>
-                    </div>
-                </section>
-
-                {/* 버튼 그룹 */}
-                <div className="flex justify-end space-x-4 mt-10">
-                    <button type="button" onClick={() => navigate(-1)} 
-                            className="px-6 py-3 bg-gray-300 rounded-lg text-lg hover:bg-gray-400 transition-colors">
-                        취소
-                    </button>
-                    <button type="button" onClick={(e) => handleSubmit(e, true)}
-                            className="px-6 py-3 bg-yellow-500 text-white rounded-lg text-lg hover:bg-yellow-600 transition-colors">
-                        임시 저장
-                </button>
-                    <button type="button" onClick={(e) => handleSubmit(e, false)}
-                            className="px-6 py-3 bg-blue-500 text-white rounded-lg text-lg hover:bg-blue-600 transition-colors">
-                        등록
-                </button>
-            </div>
+                <ActionButtons 
+                    onCancel={() => navigate(-1)}
+                    onSubmit={() => handleSubmit(false)}
+                    onTemporarySave={() => handleSubmit(true)}
+                    showTempSave={true}
+                    submitText="등록"
+                />
             </form>
         </div>
     );

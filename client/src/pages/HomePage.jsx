@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import React, {useCallback, useEffect, useRef, useState} from "react";
+import {useNavigate} from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 
 export default function HomePage() {
@@ -69,35 +69,36 @@ export default function HomePage() {
     }, [hasMore]);
 
     return (
-        <div className="max-w-6xl mx-auto p-8 font-pretendard">
-            <div className="flex justify-between items-center mb-10">
-                <h1 className="text-4xl font-bold text-gray-800">샐러리: 중고거래 플랫폼</h1>
+        <div className="max-w-6xl mx-auto p-8 font-pretendard bg-gray-50">
+            <div className="flex justify-between items-center mb-12">
+                <h1 className="text-4xl font-bold text-primary-700">샐러리: 중고거래 플랫폼</h1>
             </div>
 
             {/* 히어로 섹션 */}
-            <div className="relative mb-12">
-                <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg p-10 text-white">
-                    <h2 className="text-3xl font-bold mb-4">쉽고 빠른 중고거래 시작하기</h2>
-                    <p className="text-xl mb-6">나에게 필요하지 않은 물건, 누군가에겐 소중한 보물이 될 수 있어요!</p>
-                    <button 
-                        onClick={() => navigate("/product/upload")}
-                        className="px-6 py-3 bg-white text-blue-500 font-semibold rounded-lg hover:bg-gray-100 transition"
-                    >
-                        상품 등록하기
-                    </button>
+            <div className="relative mb-16">
+                <div className="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-xl p-10 text-white shadow-md">
+                    <div className="max-w-2xl">
+                        <h2 className="text-3xl font-bold mb-4">쉽고 빠른 중고거래 시작하기 🥬✨</h2>
+                        <p className="text-xl mb-8 text-white/90">나에게 필요하지 않은 물건, 누군가에겐 소중한 보물이 될 수 있어요!</p>
+                        <button 
+                            onClick={() => navigate("/product/upload")}
+                            className="px-6 py-3 bg-white text-primary-600 font-medium rounded-lg hover:bg-gray-100 transition-colors shadow-sm"
+                        >
+                            상품 등록하기
+                        </button>
+                    </div>
                 </div>
             </div>
 
             {/* 최신 상품 섹션 */}
-            <section className="mb-12">
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-semibold text-gray-800">최근 등록된 상품</h2>
+            <section className="mb-16 bg-white p-8 rounded-xl shadow-sm">
+                <div className="flex justify-between items-center mb-8">
+                    <h2 className="text-2xl font-semibold text-primary-700">최근 등록된 상품 🛒</h2>
                     <button 
-                        // 단순히 상품 목록 페이지로 이동
                         onClick={() => navigate("/products")}
-                        className="text-blue-500 hover:underline"
+                        className="text-primary-600 hover:text-primary-700 font-medium flex items-center"
                     >
-                        더보기 →
+                        더보기 <span className="ml-1">→</span>
                     </button>
                 </div>
                 
@@ -119,15 +120,14 @@ export default function HomePage() {
             </section>
 
             {/* 인기 상품 섹션 */}
-            <section>
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-semibold text-gray-800">인기 상품</h2>
+            <section className="bg-white p-8 rounded-xl shadow-sm">
+                <div className="flex justify-between items-center mb-8">
+                    <h2 className="text-2xl font-semibold text-primary-700">인기 상품 🔥</h2>
                     <button 
-                        // 단순히 상품 목록 페이지로 이동
                         onClick={() => navigate("/products")}
-                        className="text-blue-500 hover:underline"
+                        className="text-primary-600 hover:text-primary-700 font-medium flex items-center"
                     >
-                        더보기 →
+                        더보기 <span className="ml-1">→</span>
                     </button>
                 </div>
 

@@ -1,32 +1,33 @@
 const mongoose = require("mongoose");
+const { TRADE_TYPES, PRODUCT_STATUS, WRITE_STATUS } = require('../constants/productConstants');
 
 const ProductSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true }, // 카테고리 참조
-    transactionType: {
+    name: { type: String, required: true }, // 상품명
+    category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
+    tradeType: {
         type: String,
         required: true,
-        enum: ['판매', '나눔']
+        enum: Object.values(TRADE_TYPES)
     },
-    description: String,
-    createdAt: { type: Date, default: () => Date.now() + (9 * 60 * 60 * 1000) },
-    updatedAt: Date,
-    deletedAt: Date,
-    seller: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    description: { type: String, required: true },
+    createdAt: { type: Date, default: () => Date.now() + (9 * 60 * 60 * 1000) }, // 상품 등록 시간 (한국 시간)
+    updatedAt: { type: Date },
+    deletedAt: { type: Date },
+    seller: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // 판매자 정보
     status: {
         type: String,
         required: true,
-        enum: ['판매중', '판매완료', '임시저장', '삭제']
+        enum: Object.values(PRODUCT_STATUS)
     },
     writeStatus: {
         type: String,
         required: true,
-        enum: ['임시저장', '등록']
+        enum: Object.values(WRITE_STATUS),
     },
-    region: { type: mongoose.Schema.Types.ObjectId, ref: 'Region' },
-    price : {type: Number, default: 0},
-    fileUrls: { type: [String], default: [] },
-    fileNames: { type: [String], default: [] },
+    region: { type: mongoose.Schema.Types.ObjectId, ref: 'Region', required: true },
+    price: { type: Number, required: true, default: 0 },
+    fileUrls: { type: [String], default: [] }, // 상품 이미지 URL 배열
+    fileNames: { type: [String], default: [] }, // 상품 이미지 파일명 배열
 },{
     versionKey : false, // __v 필드 비활성화
 });

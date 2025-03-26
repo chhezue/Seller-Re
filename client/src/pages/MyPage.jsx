@@ -96,7 +96,7 @@ export default function MyPage() {
                                         <div className="ml-4 flex-1">
                                             <p className="text-gray-700 font-medium">{product.name}</p>
                                             <p className="text-xl leading-10 font-bold">
-                                                {product.transactionType === "판매" ? `${product.price} 원` : "무료 나눔"}
+                                                {product.tradeType === "판매" ? `${product.price} 원` : "무료 나눔"}
                                             </p>
                                             <p className="text-sm text-gray-500">{product.createdAt}</p>
                                         </div>
@@ -132,7 +132,7 @@ export default function MyPage() {
                                         <div className="ml-4 flex-1">
                                             <p className="text-gray-700 font-medium">{product.name}</p>
                                             <p className="text-xl leading-10 font-bold">
-                                                {product.transactionType === "판매" ? `${product.price} 원` : "무료 나눔"}
+                                                {product.tradeType === "판매" ? `${product.price} 원` : "무료 나눔"}
                                             </p>
                                             <p className="text-sm text-gray-500">{product.createdAt}</p>
                                         </div>

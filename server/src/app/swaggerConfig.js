@@ -1,6 +1,7 @@
 const swaggerJSDoc = require("swagger-jsdoc");
 const userSwagger = require("./swagger/userSwagger");
 const productSwagger = require("./swagger/productSwagger");
+const authSwagger = require("./swagger/authSwagger");
 
 const options = {
     definition: {
@@ -26,11 +27,12 @@ const options = {
 
 const swaggerSpec = swaggerJSDoc(options);
 
-// 사용자 API 문서 추가
+// API 문서 추가
 swaggerSpec.paths = {
     ...swaggerSpec.paths,
     ...userSwagger,
-    ...productSwagger
+    ...productSwagger,
+    ...authSwagger
 };
 
 module.exports = swaggerSpec;

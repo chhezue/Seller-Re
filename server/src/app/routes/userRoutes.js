@@ -1,34 +1,41 @@
 const express = require('express');
 const { UserController } = require('../controllers/userController');
-const { AuthMiddleware } = require('../middlewares/authMiddleware');
 
 class UserRoutes {
     constructor() {
         this.router = express.Router();
         this.userController = new UserController();
-        this.authMiddleware = new AuthMiddleware();
         this.initializeRoutes();
     }
 
-    initializeRoutes() {    
-        this.router.get('/', this.userController.getUsers.bind(this.userController));
-        this.router.post('/', this.userController.createUser.bind(this.userController));
-        this.router.post('/login', this.userController.loginUser.bind(this.userController));
-        this.router.post('/refresh', this.userController.refresh.bind(this.userController));
-        
-        // accessToken이 유효한 경우에만 로그아웃 가능
-        // this.router.post('/logout', this.userController.logout.bind(this.userController));
-        this.router.post('/logout', this.authMiddleware.authenticateToken.bind(this.authMiddleware), this.userController.logout.bind(this.userController));
+    initializeRoutes() {
+        /**
+         * @route   GET /api/users
+         * @desc    모든 사용자 목록 조회
+         * @access  Public
+         */
+        this.router.get('/',
+            this.userController.getUsers.bind(this.userController)
+        );
 
-        // api/users/auth 호출 시 현재 사용자 정보 반환
-        this.router.get('/auth', this.authMiddleware.authenticateToken.bind(this.authMiddleware), (req, res) => {
-            res.json({ user: req.user });
-        });
+        /**
+         * @route   POST /api/users
+         * @desc    새로운 사용자 생성 (회원가입)
+         * @access  Public
+         */
+        this.router.post('/',
+            this.userController.createUser.bind(this.userController)
+        );
 
-        // 랜덤 유저 가져오기
-        this.router.get('/randomUser', this.userController.getRandomUser.bind(this.userController));
+        /**
+         * @route   GET /api/auth/random-user
+         * @desc    랜덤 사용자 정보 조회
+         * @access  Public
+         */
+        this.router.get('/random-user',
+            this.userController.getRandomUser.bind(this.userController)
+        );
     }
 }
-
 
 module.exports = { UserRoutes };

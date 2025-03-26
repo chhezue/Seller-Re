@@ -7,7 +7,7 @@
     "dev": "concurrently \"npm run server-dev\" \"npm run client-dev\"",
     "client-dev": "cd client && npm start",
     "server-dev": "cd server && npm run dev",
-    "start" : "concurrently \"npm run server\" \"npm run client\"",
+    "start": "concurrently \"npm run server\" \"npm run client\"",
     "client": "cd client && npm start",
     "server": "cd server && npm start"
   },
@@ -23,5 +23,8 @@
   "homepage": "https://github.com/chhezue/Seller-Re-Market#readme",
   "devDependencies": {
     "concurrently": "^9.1.2"
+  },
+  "dependencies": {
+    "swagger-ui-express": "^5.0.1"
   }
 }
